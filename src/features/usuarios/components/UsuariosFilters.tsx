@@ -1,0 +1,61 @@
+"use client";
+
+import { Search } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+
+export type TipoFilter = "" | "admin" | "comum";
+
+const FILTERS: { value: TipoFilter; label: string }[] = [
+  { value: "", label: "Todos os tipos" },
+  { value: "admin", label: "Administradores" },
+  { value: "comum", label: "Usuários comuns" },
+];
+
+interface UsuariosFiltersProps {
+  search: string;
+  onSearchChange: (v: string) => void;
+  tipo: TipoFilter;
+  onTipoChange: (v: TipoFilter) => void;
+}
+
+export function UsuariosFilters({
+  search,
+  onSearchChange,
+  tipo,
+  onTipoChange,
+}: UsuariosFiltersProps) {
+  return (
+    <Card>
+      <CardContent className="p-4">
+        <div className="grid gap-3 sm:grid-cols-[1fr,220px]">
+          <div className="relative">
+            <Search
+              aria-hidden
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+            />
+            <Input
+              value={search}
+              onChange={(e) => onSearchChange(e.target.value)}
+              placeholder="Buscar por nome ou e-mail…"
+              className="pl-9"
+              aria-label="Buscar usuários"
+            />
+          </div>
+          <select
+            value={tipo}
+            onChange={(e) => onTipoChange(e.target.value as TipoFilter)}
+            className="h-10 rounded-md border border-slate-300 bg-white px-3 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+            aria-label="Filtrar por tipo"
+          >
+            {FILTERS.map((f) => (
+              <option key={f.value} value={f.value}>
+                {f.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
