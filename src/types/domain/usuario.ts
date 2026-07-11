@@ -15,5 +15,5 @@ export interface UsuarioInput {
 
 export interface AuthSession {
   user: Usuario;
-  token?: string;
+  token: string;
 }

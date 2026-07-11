@@ -1,29 +1,23 @@
 export const endpoints = {
   auth: {
-    login: "/usuarios/login",
-    register: "/usuarios",
-    recoverPassword: "/usuarios/recover-password",
+    login: "/auth/signin",
+    register: "/auth/signup",
   },
   usuarios: {
-    base: "/usuarios",
-    byId: (id: number | string) => `/usuarios/${id}`,
+    base: "/user",
+    byId: (id: number | string) => `/user/${id}`,
   },
   pacientes: {
-    base: "/pacientes",
-    byId: (id: number | string) => `/pacientes/${id}`,
-    verificarEmail: "/pacientes/verificar-email",
-    exames: (id: number | string) => `/pacientes/buscaExames/${id}`,
+    base: "/patient",
+    byId: (id: number | string) => `/patient/${id}`,
   },
-  exames: {
-    hemato: "/exameHemato",
-    hematoById: (id: number | string) => `/exameHemato/${id}`,
-    bioquimica: "/exameBio",
-    bioquimicaById: (id: number | string) => `/exameBio/${id}`,
-    anamnese: "/anamneseEnf",
-    anamneseById: (id: number | string) => `/anamneseEnf/${id}`,
+  templates: {
+    base: "/template",
+    byId: (id: number | string) => `/template/${id}`,
   },
-  referencias: {
-    hemato: "/referencias/hematologia",
-    bioquimica: "/referencias/bioquimica",
+  exam: {
+    base: "/exam",
+    byId: (id: number | string) => `/exam/${id}`,
+    byPatient: (patientId: number | string) => `/exam/patient/${patientId}`,
   },
 } as const;

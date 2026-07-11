@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { ArrowLeft, ClipboardX, Plus } from "lucide-react";
@@ -15,11 +15,11 @@ import { TableSkeleton } from "@/components/tables/TableSkeleton";
 import { ConfirmDialog } from "@/components/modals/ConfirmDialog";
 import { useAuth } from "@/providers/AuthProvider";
 import { usePacienteQuery } from "@/hooks/usePacientes";
-import { useDeleteExame, useExamesPacienteQuery } from "@/hooks/useExames";
+import { useExamsByPatientQuery, useDeleteExam } from "@/hooks/useExam";
+import { useExamTemplatesQuery } from "@/hooks/useExamTemplates";
 import { isApiError } from "@/lib/http/errors";
-import { TIPO_EXAME_LABEL } from "@/constants/exames";
 import { routes } from "@/constants/routes";
-import type { ExameResumo } from "@/types";
+import type { Exam } from "@/types";
 
 import { HistoricoExamesTable } from "@/features/exames/components/HistoricoExamesTable";
 
@@ -30,10 +30,16 @@ export default function HistoricoExamesPage() {
   const isAdmin = !!session?.user.admin;
 
   const pacienteQuery = usePacienteQuery(id);
-  const examesQuery = useExamesPacienteQuery(id);
-  const deleteMutation = useDeleteExame(id!);
+  const examesQuery = useExamsByPatientQuery(id);
+  const templatesQuery = useExamTemplatesQuery();
+  const deleteMutation = useDeleteExam(id!);
 
-  const [toDelete, setToDelete] = useState<ExameResumo | null>(null);
+  const [toDelete, setToDelete] = useState<Exam | null>(null);
+
+  const templateNames = useMemo<Record<number, string>>(() => {
+    if (!templatesQuery.data) return {};
+    return Object.fromEntries(templatesQuery.data.map((t) => [t.id, t.name]));
+  }, [templatesQuery.data]);
 
   if (pacienteQuery.isLoading) return <LoadingState label="Carregando paciente…" />;
 
@@ -59,7 +65,7 @@ export default function HistoricoExamesPage() {
   async function handleDelete() {
     if (!toDelete) return;
     try {
-      await deleteMutation.mutateAsync({ id: toDelete.id, tipo: toDelete.tipo });
+      await deleteMutation.mutateAsync(toDelete.id);
       toast.success(`Exame #${toDelete.id} excluído.`);
       setToDelete(null);
     } catch (err) {
@@ -96,7 +102,7 @@ export default function HistoricoExamesPage() {
             query={examesQuery}
             loading={
               <div className="p-4">
-                <TableSkeleton rows={4} columns={5} />
+                <TableSkeleton rows={4} columns={4} />
               </div>
             }
             error={(refetch) => (
@@ -116,13 +122,14 @@ export default function HistoricoExamesPage() {
               <HistoricoExamesTable
                 idPaciente={paciente.id}
                 exames={exames}
+                templateNames={templateNames}
                 isAdmin={isAdmin}
                 onDelete={setToDelete}
                 empty={
                   <EmptyState
                     icon={<ClipboardX className="h-5 w-5" />}
                     title="Nenhum exame registrado"
-                    description="Clique em “Incluir exame” para registrar o primeiro."
+                    description="Clique em "Incluir exame" para registrar o primeiro."
                     action={
                       <Button asChild>
                         <Link href={`${routes.exames}/${paciente.id}/selecionar`}>
@@ -145,7 +152,7 @@ export default function HistoricoExamesPage() {
         title="Excluir exame"
         description={
           toDelete
-            ? `Excluir o exame #${toDelete.id} (${TIPO_EXAME_LABEL[toDelete.tipo]})? Esta ação não pode ser desfeita.`
+            ? `Excluir o exame #${toDelete.id} (${templateNames[toDelete.examTemplateId] ?? `template #${toDelete.examTemplateId}`})? Esta ação não pode ser desfeita.`
             : undefined
         }
         confirmLabel="Excluir"

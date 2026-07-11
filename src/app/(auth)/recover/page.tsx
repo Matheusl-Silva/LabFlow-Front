@@ -18,8 +18,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/forms/FormField";
 import { recoverSchema, type RecoverInput } from "@/schemas/auth.schema";
-import { authService } from "@/services/auth.service";
-import { isApiError } from "@/lib/http/errors";
 import { routes } from "@/constants/routes";
 
 export default function RecoverPage() {
@@ -34,15 +32,9 @@ export default function RecoverPage() {
     defaultValues: { email: "", senha: "", confirmacao: "" },
   });
 
-  async function onSubmit(values: RecoverInput) {
-    try {
-      await authService.recoverPassword(values);
-      setDone(true);
-      toast.success("Senha atualizada com sucesso!");
-    } catch (err) {
-      const message = isApiError(err) ? err.message : "Falha ao atualizar senha.";
-      toast.error(message);
-    }
+  async function onSubmit(_values: RecoverInput) {
+    void _values;
+    toast.error("Recuperação de senha não disponível nesta versão.");
   }
 
   if (done) {

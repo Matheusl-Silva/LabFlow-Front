@@ -1,85 +1,72 @@
 import { httpClient } from "@/lib/http/client";
 import { endpoints } from "@/lib/http/endpoints";
-import type { Paciente, PacienteInput, Periodo } from "@/types";
+import type { Paciente, PacienteInput } from "@/types";
 import type { PacienteRepository } from "./paciente.repository";
 
-interface PacienteApi {
+interface PatientApi {
   id: number;
-  cnome: string;
-  cemail: string;
-  cperiodo: Periodo;
-  ddata_nascimento: string;
-  ctelefone: string;
-  ccpf: string;
-  cmedicamento: string | null;
-  cpatologia: string | null;
-}
-
-interface PacientePayloadApi {
-  nome: string;
+  name: string;
   email: string;
-  periodo: Periodo;
-  data_nascimento: string;
-  telefone: string;
+  period: string;
+  birthDate: string;
+  phone: string;
   cpf: string;
-  medicamento: string | null;
-  patologia: string | null;
+  medication: string | null;
+  pathology: string | null;
 }
 
-interface CreateResponse {
-  message: string;
-  id: number;
-}
-
-function toDomain(p: PacienteApi): Paciente {
+function toDomain(p: PatientApi): Paciente {
   return {
     id: p.id,
-    nome: p.cnome,
-    email: p.cemail,
-    periodo: p.cperiodo,
+    nome: p.name,
+    email: p.email,
+    periodo: p.period.toLowerCase() as Paciente["periodo"],
     dataNascimento:
-      typeof p.ddata_nascimento === "string"
-        ? p.ddata_nascimento.slice(0, 10)
-        : p.ddata_nascimento,
-    telefone: p.ctelefone,
-    cpf: p.ccpf,
-    medicamento: p.cmedicamento,
-    patologia: p.cpatologia,
+      typeof p.birthDate === "string" ? p.birthDate.slice(0, 10) : String(p.birthDate),
+    telefone: p.phone.replace(/\D/g, ""),
+    cpf: p.cpf.replace(/\D/g, ""),
+    medicamento: p.medication ?? null,
+    patologia: p.pathology ?? null,
   };
 }
 
-function toApi(input: PacienteInput): PacientePayloadApi {
+function toApi(input: PacienteInput) {
+  const period = input.periodo.charAt(0).toUpperCase() + input.periodo.slice(1);
   return {
-    nome: input.nome,
+    name: input.nome,
     email: input.email,
-    periodo: input.periodo,
-    data_nascimento: input.dataNascimento,
-    telefone: input.telefone,
+    period,
+    birthDate: input.dataNascimento,
+    phone: input.telefone,
     cpf: input.cpf,
-    medicamento: input.medicamento ?? null,
-    patologia: input.patologia ?? null,
+    medication: input.medicamento ?? null,
+    pathology: input.patologia ?? null,
   };
 }
 
 export const httpPacienteRepository: PacienteRepository = {
   async listAll() {
-    const { data } = await httpClient.get<PacienteApi[]>(endpoints.pacientes.base);
+    const { data } = await httpClient.get<PatientApi[]>(endpoints.pacientes.base);
     return data.map(toDomain);
   },
+
   async findById(id) {
-    const { data } = await httpClient.get<PacienteApi>(endpoints.pacientes.byId(id));
+    const { data } = await httpClient.get<PatientApi>(endpoints.pacientes.byId(id));
     return toDomain(data);
   },
+
   async create(input) {
-    const { data } = await httpClient.post<CreateResponse>(
+    const { data } = await httpClient.post<{ id: number }>(
       endpoints.pacientes.base,
       toApi(input),
     );
     return data.id;
   },
+
   async update(id, input) {
     await httpClient.put(endpoints.pacientes.byId(id), toApi(input));
   },
+
   async remove(id) {
     await httpClient.delete(endpoints.pacientes.byId(id));
   },

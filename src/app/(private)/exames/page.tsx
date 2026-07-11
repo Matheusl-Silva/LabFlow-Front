@@ -3,13 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  ArrowRight,
-  ClipboardList,
-  Droplet,
-  HeartPulse,
-  Search,
-} from "lucide-react";
+import { ArrowRight, ClipboardList, Search } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -21,16 +15,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useAuth } from "@/providers/AuthProvider";
 import { pacienteService } from "@/services/paciente.service";
 import { isApiError } from "@/lib/http/errors";
 import { routes } from "@/constants/routes";
 
 export default function ExamesHubPage() {
   const router = useRouter();
-  const { session } = useAuth();
-  const isAdmin = !!session?.user.admin;
-
   const [pacienteId, setPacienteId] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -86,30 +76,6 @@ export default function ExamesHubPage() {
           </form>
         </CardContent>
       </Card>
-
-      {isAdmin && (
-        <section className="space-y-3">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-            Referências (admin)
-          </h2>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <ReferenceCard
-              href={routes.referenciasBio}
-              icon={<Droplet className="h-5 w-5" />}
-              accent="bg-emerald-100 text-emerald-700"
-              title="Bioquímica"
-              description="Editar valores de referência para os exames bioquímicos."
-            />
-            <ReferenceCard
-              href={routes.referenciasHemato}
-              icon={<HeartPulse className="h-5 w-5" />}
-              accent="bg-brand-100 text-brand-700"
-              title="Hematologia"
-              description="Editar valores de referência para os exames hematológicos."
-            />
-          </div>
-        </section>
-      )}
 
       <section className="space-y-3">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">

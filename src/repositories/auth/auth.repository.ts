@@ -2,22 +2,16 @@ import type { Usuario } from "@/types";
 
 export interface LoginPayload {
   email: string;
-  senha: string;
+  pass: string;
 }
 
 export interface RegisterPayload {
-  cnome: string;
-  cemail: string;
-  csenha: string;
-}
-
-export interface RecoverPayload {
+  name: string;
   email: string;
-  senha: string;
+  pass: string;
 }
 
 export interface AuthRepository {
-  login(payload: LoginPayload): Promise<Usuario>;
+  login(payload: LoginPayload): Promise<{ user: Usuario; token: string }>;
   register(payload: RegisterPayload): Promise<void>;
-  recoverPassword(payload: RecoverPayload): Promise<void>;
 }

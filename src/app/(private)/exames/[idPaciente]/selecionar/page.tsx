@@ -1,76 +1,38 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
-import {
-  ArrowLeft,
-  ArrowRight,
-  CheckSquare,
-  ClipboardCheck,
-  Droplet,
-  HeartPulse,
-  Square,
-} from "lucide-react";
-import { toast } from "sonner";
+import { useParams } from "next/navigation";
+import { ArrowLeft, ArrowRight, FlaskConical } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { LoadingState } from "@/components/feedback/LoadingState";
 import { EmptyState } from "@/components/feedback/EmptyState";
+import { Async } from "@/components/feedback/Async";
 import { usePacienteQuery } from "@/hooks/usePacientes";
-import { BIOQUIMICA_CATALOGO, BIOQUIMICA_ITENS_FLAT } from "@/constants/exames";
+import { useExamTemplatesQuery } from "@/hooks/useExamTemplates";
 import { routes } from "@/constants/routes";
 import { cn } from "@/lib/utils";
+import type { ExamTemplate } from "@/types";
+
+const CARD_ACCENTS = [
+  "from-brand-600 to-brand-800",
+  "from-violet-600 to-violet-800",
+  "from-emerald-600 to-emerald-800",
+  "from-sky-600 to-sky-800",
+  "from-rose-600 to-rose-800",
+  "from-amber-600 to-amber-800",
+];
 
 export default function SelecionarExamePage() {
-  const router = useRouter();
   const params = useParams<{ idPaciente: string }>();
   const id = params?.idPaciente;
-  const { data: paciente, isLoading, isError } = usePacienteQuery(id);
 
-  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const pacienteQuery = usePacienteQuery(id);
+  const templatesQuery = useExamTemplatesQuery();
 
-  const totalItens = BIOQUIMICA_ITENS_FLAT.length;
-  const allSelected = useMemo(() => selected.size === totalItens, [selected, totalItens]);
+  if (pacienteQuery.isLoading) return <LoadingState label="Carregando paciente…" />;
 
-  function toggleItem(itemId: string) {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      if (next.has(itemId)) next.delete(itemId);
-      else next.add(itemId);
-      return next;
-    });
-  }
-
-  function selectAll() {
-    setSelected(new Set(BIOQUIMICA_ITENS_FLAT.map((i) => i.id)));
-  }
-
-  function clearAll() {
-    setSelected(new Set());
-  }
-
-  function confirmarBioquimica() {
-    if (selected.size === 0) {
-      toast.error("Selecione ao menos um exame bioquímico.");
-      return;
-    }
-    const ids = Array.from(selected).join(",");
-    router.push(
-      `${routes.exames}/${id}/bioquimica/novo?itens=${encodeURIComponent(ids)}`,
-    );
-  }
-
-  if (isLoading) return <LoadingState label="Carregando paciente…" />;
-
-  if (isError || !paciente) {
+  if (pacienteQuery.isError || !pacienteQuery.data) {
     return (
       <EmptyState
         title="Paciente não encontrado"
@@ -87,11 +49,13 @@ export default function SelecionarExamePage() {
     );
   }
 
+  const paciente = pacienteQuery.data;
+
   return (
     <div className="space-y-6">
       <PageHeader
         title="Selecionar exame"
-        description={`Escolha o que cadastrar para ${paciente.nome} (#${paciente.id}).`}
+        description={`Escolha o tipo de exame para ${paciente.nome} (#${paciente.id}).`}
         actions={
           <Button asChild variant="outline">
             <Link href={`${routes.exames}/${paciente.id}`}>
@@ -102,125 +66,61 @@ export default function SelecionarExamePage() {
         }
       />
 
-      <section className="grid gap-4 sm:grid-cols-2">
-        <DirectExamCard
-          href={`${routes.exames}/${paciente.id}/hematologia/novo`}
-          icon={<HeartPulse className="h-6 w-6" />}
-          accent="from-brand-600 to-brand-800"
-          title="Hematologia"
-          description="Cadastrar exame hematológico com valores e referências."
-        />
-        <DirectExamCard
-          href={`${routes.exames}/${paciente.id}/anamnese/novo`}
-          icon={<ClipboardCheck className="h-6 w-6" />}
-          accent="from-violet-600 to-violet-800"
-          title="Anamnese de Enfermagem"
-          description="Preencher o questionário e formulário de anamnese."
-        />
-      </section>
-
-      <Card>
-        <CardHeader>
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Droplet className="h-5 w-5 text-emerald-600" />
-                Exames Bioquímicos
-              </CardTitle>
-              <CardDescription>
-                Selecione os exames que farão parte do laudo bioquímico.
-              </CardDescription>
-            </div>
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={allSelected ? clearAll : selectAll}
-              >
-                {allSelected ? (
-                  <>
-                    <Square className="h-4 w-4" />
-                    Limpar seleção
-                  </>
-                ) : (
-                  <>
-                    <CheckSquare className="h-4 w-4" />
-                    Selecionar todos
-                  </>
-                )}
+      <Async
+        query={templatesQuery}
+        loading={<LoadingState label="Carregando templates…" />}
+        error={(refetch) => (
+          <EmptyState
+            title="Erro ao carregar templates"
+            description="Não foi possível buscar os tipos de exame disponíveis."
+            action={
+              <Button variant="outline" onClick={refetch}>
+                Tentar novamente
               </Button>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {BIOQUIMICA_CATALOGO.map((grupo) => (
-              <div
-                key={grupo.id}
-                className="space-y-3 rounded-lg border border-slate-200 bg-slate-50/60 p-4"
-              >
-                <h3 className="text-sm font-semibold text-slate-800">{grupo.titulo}</h3>
-                <ul className="space-y-2">
-                  {grupo.itens.map((item) => {
-                    const checked = selected.has(item.id);
-                    return (
-                      <li key={item.id}>
-                        <label
-                          className={cn(
-                            "flex cursor-pointer items-start gap-2 rounded-md border bg-white px-3 py-2 text-sm transition-colors",
-                            checked
-                              ? "border-brand-500 bg-brand-50 text-brand-900"
-                              : "border-slate-200 text-slate-700 hover:border-slate-300",
-                          )}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={checked}
-                            onChange={() => toggleItem(item.id)}
-                            className="mt-0.5 h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
-                          />
-                          <span>{item.label}</span>
-                        </label>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
+            }
+          />
+        )}
+        isEmpty={(data) => data.length === 0}
+        empty={() => (
+          <EmptyState
+            title="Nenhum template disponível"
+            description="Não há tipos de exame cadastrados no sistema."
+          />
+        )}
+      >
+        {(templates) => (
+          <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {templates.map((template: ExamTemplate, index: number) => (
+              <TemplateCard
+                key={template.id}
+                template={template}
+                patientId={id}
+                accent={CARD_ACCENTS[index % CARD_ACCENTS.length]}
+              />
             ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="sticky bottom-4 z-10 flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white/95 px-4 py-3 shadow-sm backdrop-blur">
-        <p className="text-sm text-slate-600">
-          <span className="font-semibold text-slate-900">{selected.size}</span> de{" "}
-          {totalItens} selecionado{selected.size === 1 ? "" : "s"}
-        </p>
-        <Button onClick={confirmarBioquimica} disabled={selected.size === 0}>
-          Confirmar seleção
-          <ArrowRight className="h-4 w-4" />
-        </Button>
-      </div>
+          </section>
+        )}
+      </Async>
     </div>
   );
 }
 
-function DirectExamCard({
-  href,
-  icon,
+function TemplateCard({
+  template,
+  patientId,
   accent,
-  title,
-  description,
 }: {
-  href: string;
-  icon: React.ReactNode;
+  template: ExamTemplate;
+  patientId: string;
   accent: string;
-  title: string;
-  description: string;
 }) {
+  const fieldCount = Object.keys(template.schema).length;
+
   return (
-    <Link href={href} className="group">
+    <Link
+      href={`${routes.exames}/${patientId}/novo?template=${template.id}`}
+      className="group"
+    >
       <div
         className={cn(
           "h-full rounded-xl bg-gradient-to-br p-5 text-white shadow-sm transition-shadow group-hover:shadow-md",
@@ -229,12 +129,15 @@ function DirectExamCard({
       >
         <div className="flex items-start justify-between gap-4">
           <div className="grid h-12 w-12 place-items-center rounded-lg bg-white/15">
-            {icon}
+            <FlaskConical className="h-6 w-6" />
           </div>
-          <ArrowRight className="h-5 w-5 opacity-80 group-hover:translate-x-0.5 group-hover:opacity-100 transition" />
+          <ArrowRight className="h-5 w-5 opacity-80 transition group-hover:translate-x-0.5 group-hover:opacity-100" />
         </div>
-        <h3 className="mt-4 text-lg font-semibold">{title}</h3>
-        <p className="mt-1 text-sm text-white/85">{description}</p>
+        <h3 className="mt-4 text-lg font-semibold">{template.name}</h3>
+        <p className="mt-1 text-sm text-white/85">
+          {fieldCount} {fieldCount === 1 ? "campo" : "campos"}
+          {template.version > 1 ? ` · v${template.version}` : ""}
+        </p>
       </div>
     </Link>
   );

@@ -5,44 +5,45 @@ import { Eye, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DataTable, type Column } from "@/components/tables/DataTable";
 import { formatDate } from "@/lib/format";
-import { TIPO_EXAME_BADGE, TIPO_EXAME_LABEL } from "@/constants/exames";
 import { routes } from "@/constants/routes";
-import type { ExameResumo } from "@/types";
+import type { Exam } from "@/types";
 
 interface HistoricoExamesTableProps {
   idPaciente: number | string;
-  exames: ExameResumo[];
+  exames: Exam[];
+  templateNames: Record<number, string>;
   empty: React.ReactNode;
   isAdmin: boolean;
-  onDelete: (exame: ExameResumo) => void;
+  onDelete: (exam: Exam) => void;
 }
 
 export function HistoricoExamesTable({
   idPaciente,
   exames,
+  templateNames,
   empty,
   isAdmin,
   onDelete,
 }: HistoricoExamesTableProps) {
-  const columns: Column<ExameResumo>[] = [
-    { key: "id", header: "#", cell: (e) => <span className="font-mono text-xs">{e.id}</span> },
-    { key: "data", header: "Data", cell: (e) => formatDate(e.data) },
+  const columns: Column<Exam>[] = [
     {
-      key: "tipo",
-      header: "Tipo",
-      cell: (e) => (
-        <span
-          className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${TIPO_EXAME_BADGE[e.tipo]}`}
-        >
-          {TIPO_EXAME_LABEL[e.tipo]}
-        </span>
-      ),
+      key: "id",
+      header: "#",
+      cell: (e) => <span className="font-mono text-xs">{e.id}</span>,
     },
     {
-      key: "preceptor",
-      header: "Preceptor",
-      cell: (e) =>
-        e.preceptorNome ?? (e.preceptorId ? `#${e.preceptorId}` : <span className="text-slate-400">—</span>),
+      key: "date",
+      header: "Data",
+      cell: (e) => formatDate(e.date),
+    },
+    {
+      key: "template",
+      header: "Tipo",
+      cell: (e) => (
+        <span className="inline-flex rounded-full bg-brand-100 px-2.5 py-0.5 text-xs font-medium text-brand-800">
+          {templateNames[e.examTemplateId] ?? `Template #${e.examTemplateId}`}
+        </span>
+      ),
     },
     {
       key: "acoes",
@@ -52,7 +53,7 @@ export function HistoricoExamesTable({
       cell: (e) => (
         <div className="flex justify-end gap-1">
           <Button asChild variant="ghost" size="icon" aria-label="Visualizar">
-            <Link href={`${routes.exames}/${idPaciente}/${e.tipo}/${e.id}`}>
+            <Link href={`${routes.exames}/${idPaciente}/${e.id}`}>
               <Eye className="h-4 w-4" />
             </Link>
           </Button>
@@ -76,7 +77,7 @@ export function HistoricoExamesTable({
     <DataTable
       columns={columns}
       data={exames}
-      rowKey={(e) => `${e.tipo}-${e.id}`}
+      rowKey={(e) => String(e.id)}
       empty={empty}
     />
   );
