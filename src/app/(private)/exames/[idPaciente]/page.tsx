@@ -129,7 +129,7 @@ export default function HistoricoExamesPage() {
                   <EmptyState
                     icon={<ClipboardX className="h-5 w-5" />}
                     title="Nenhum exame registrado"
-                    description="Clique em "Incluir exame" para registrar o primeiro."
+                    description="Clique em “Incluir exame” para registrar o primeiro."
                     action={
                       <Button asChild>
                         <Link href={`${routes.exames}/${paciente.id}/selecionar`}>
