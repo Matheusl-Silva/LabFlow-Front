@@ -15,11 +15,15 @@ import {
 } from "@/types";
 
 interface ModeloFormProps {
-  /** Undefined quando é uma nova versão: o nome é herdado e não pode mudar. */
   initialName?: string;
   initialFields?: ExamFieldDraft[];
-  nameEditable?: boolean;
   submitLabel: string;
+  /**
+   * Nomes já em uso por outros modelos. A API identifica as versões de um mesmo
+   * modelo pelo NOME (exam-template.service.ts busca MAX(version) WHERE name),
+   * então dois modelos homônimos embaralhariam o histórico de versões de ambos.
+   */
+  nomesEmUso?: string[];
   onSubmit: (values: { name: string; schema: ExamTemplateSchema }) => Promise<void>;
   onCancel: () => void;
 }
@@ -27,8 +31,8 @@ interface ModeloFormProps {
 export function ModeloForm({
   initialName = "",
   initialFields,
-  nameEditable = true,
   submitLabel,
+  nomesEmUso = [],
   onSubmit,
   onCancel,
 }: ModeloFormProps) {
@@ -39,13 +43,16 @@ export function ModeloForm({
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  const schema = draftToSchema(fields);
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    if (nameEditable && !name.trim()) {
+    const nome = name.trim();
+    if (!nome) {
       setError("Informe o nome do modelo.");
+      return;
+    }
+    if (nomesEmUso.some((n) => n.toLowerCase() === nome.toLowerCase())) {
+      setError(`Já existe um modelo chamado "${nome}".`);
       return;
     }
     // Mesmas regras do validador da API — falhar aqui evita um 400 previsível.
@@ -58,7 +65,7 @@ export function ModeloForm({
     setError(null);
     setSubmitting(true);
     try {
-      await onSubmit({ name: name.trim(), schema });
+      await onSubmit({ name: nome, schema: draftToSchema(fields) });
     } finally {
       setSubmitting(false);
     }
@@ -69,19 +76,15 @@ export function ModeloForm({
       <Card>
         <CardContent className="space-y-5 p-6">
           <FormField
-            id="template-name"
+            id="modelo-nome"
             label="Nome do modelo"
-            required={nameEditable}
-            hint={
-              nameEditable
-                ? "Ex.: Hemograma completo, Perfil lipídico…"
-                : "O nome é herdado da versão anterior e não pode ser alterado."
-            }
+            required
+            hint="Ex.: Hemograma completo, Perfil lipídico…"
           >
             <Input
-              id="template-name"
+              id="modelo-nome"
               value={name}
-              disabled={!nameEditable || submitting}
+              disabled={submitting}
               placeholder="Hemograma completo"
               onChange={(e) => setName(e.target.value)}
             />

@@ -136,7 +136,6 @@ function TemplateCard({
         <h3 className="mt-4 text-lg font-semibold">{template.name}</h3>
         <p className="mt-1 text-sm text-white/85">
           {fieldCount} {fieldCount === 1 ? "campo" : "campos"}
-          {template.version > 1 ? ` · v${template.version}` : ""}
         </p>
       </div>
     </Link>

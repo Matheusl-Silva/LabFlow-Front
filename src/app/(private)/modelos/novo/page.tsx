@@ -9,7 +9,10 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { ModeloForm } from "@/features/modelos/components/ModeloForm";
 import { useAuth } from "@/providers/AuthProvider";
-import { useCreateExamTemplate } from "@/hooks/useExamTemplates";
+import {
+  useCreateExamTemplate,
+  useExamTemplatesQuery,
+} from "@/hooks/useExamTemplates";
 import { isApiError } from "@/lib/http/errors";
 import { routes } from "@/constants/routes";
 
@@ -17,6 +20,7 @@ export default function NovoModeloPage() {
   const router = useRouter();
   const { session } = useAuth();
   const createMutation = useCreateExamTemplate();
+  const { data: modelos = [] } = useExamTemplatesQuery();
 
   if (!session?.user.admin) {
     return (
@@ -49,11 +53,12 @@ export default function NovoModeloPage() {
 
       <ModeloForm
         submitLabel="Criar modelo"
+        nomesEmUso={modelos.map((m) => m.name)}
         onCancel={() => router.push(routes.modelos)}
         onSubmit={async ({ name, schema }) => {
           try {
-            const template = await createMutation.mutateAsync({ name, schema });
-            toast.success(`Template "${template.name}" criado.`);
+            const modelo = await createMutation.mutateAsync({ name, schema });
+            toast.success(`Modelo "${modelo.name}" criado.`);
             router.push(routes.modelos);
           } catch (err) {
             toast.error(isApiError(err) ? err.message : "Falha ao criar modelo.");

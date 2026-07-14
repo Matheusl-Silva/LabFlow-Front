@@ -3,34 +3,33 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, GitBranch, Trash2 } from "lucide-react";
+import { ArrowLeft, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FormField } from "@/components/forms/FormField";
 import { LoadingState } from "@/components/feedback/LoadingState";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { ConfirmDialog } from "@/components/modals/ConfirmDialog";
 import { ModeloForm } from "@/features/modelos/components/ModeloForm";
+import { schemaEquals } from "@/features/modelos/lib/schema";
 import { useAuth } from "@/providers/AuthProvider";
 import {
   useCreateExamTemplateVersion,
   useDeleteExamTemplate,
   useExamTemplateQuery,
+  useExamTemplatesQuery,
   useUpdateExamTemplate,
 } from "@/hooks/useExamTemplates";
 import { isApiError } from "@/lib/http/errors";
 import { routes } from "@/constants/routes";
-import { schemaToDraft, type ExamTemplate } from "@/types";
+import { schemaToDraft, type ExamTemplate, type ExamTemplateSchema } from "@/types";
 
 export default function ModeloDetalhePage() {
   const params = useParams<{ id: string }>();
   const id = params?.id;
   const { session } = useAuth();
 
-  const { data: template, isLoading, isError } = useExamTemplateQuery(id);
+  const { data: modelo, isLoading, isError } = useExamTemplateQuery(id);
 
   if (!session?.user.admin) {
     return (
@@ -48,7 +47,7 @@ export default function ModeloDetalhePage() {
 
   if (isLoading) return <LoadingState label="Carregando modelo…" />;
 
-  if (isError || !template) {
+  if (isError || !modelo) {
     return (
       <EmptyState
         title="Modelo não encontrado"
@@ -62,73 +61,69 @@ export default function ModeloDetalhePage() {
     );
   }
 
-  return <ModeloDetalhe template={template} />;
+  return <ModeloDetalhe modelo={modelo} />;
 }
 
-function ModeloDetalhe({ template }: { template: ExamTemplate }) {
+function ModeloDetalhe({ modelo }: { modelo: ExamTemplate }) {
   const router = useRouter();
   const updateMutation = useUpdateExamTemplate();
+  const versionMutation = useCreateExamTemplateVersion(modelo.id);
   const deleteMutation = useDeleteExamTemplate();
-  const versionMutation = useCreateExamTemplateVersion(template.id);
 
-  const [nome, setNome] = useState(template.name);
-  const [editandoSchema, setEditandoSchema] = useState(false);
+  // Para barrar nomes duplicados — sem contar o próprio modelo.
+  const { data: modelos = [] } = useExamTemplatesQuery();
+  const nomesEmUso = modelos.filter((m) => m.id !== modelo.id).map((m) => m.name);
+
   const [confirmOpen, setConfirmOpen] = useState(false);
 
-  const campos = Object.entries(template.schema);
+  /**
+   * Para o usuário isto é apenas "salvar as alterações do modelo".
+   *
+   * Nos bastidores, a API não deixa mutar o schema de um modelo que já tem
+   * exames gravados — isso invalidaria os laudos emitidos. Ela versiona:
+   * desativa a versão atual e cria a seguinte, com um id novo. Traduzimos a
+   * intenção do usuário em até duas chamadas:
+   *
+   *   nome mudou     → PUT  /template/:id         (mesmo id, mesma versão)
+   *   campos mudaram → POST /template/update/:id  (versão nova, id NOVO)
+   *
+   * O nome vai primeiro de propósito: `createNewVersion` herda o nome do
+   * registro atual, então a nova versão já nasce com o nome novo.
+   */
+  async function salvar({ name, schema }: { name: string; schema: ExamTemplateSchema }) {
+    const nomeMudou = name !== modelo.name;
+    const camposMudaram = !schemaEquals(schema, modelo.schema);
 
-  async function salvarNome() {
-    if (!nome.trim() || nome.trim() === template.name) return;
-    try {
-      await updateMutation.mutateAsync({
-        id: template.id,
-        input: { name: nome.trim() },
-      });
-      toast.success("Nome atualizado.");
-    } catch (err) {
-      toast.error(isApiError(err) ? err.message : "Falha ao renomear modelo.");
+    if (!nomeMudou && !camposMudaram) {
+      toast.info("Nenhuma alteração para salvar.");
+      return;
     }
-  }
 
-  if (editandoSchema) {
-    return (
-      <div className="space-y-6">
-        <PageHeader
-          title={`Nova versão — ${template.name}`}
-          description={`A v${template.version} será desativada e a v${template.version + 1} criada com o schema abaixo. Exames já registrados continuam apontando para a versão antiga.`}
-          actions={
-            <Button variant="outline" onClick={() => setEditandoSchema(false)}>
-              <ArrowLeft className="h-4 w-4" />
-              Cancelar
-            </Button>
-          }
-        />
+    try {
+      if (nomeMudou) {
+        await updateMutation.mutateAsync({ id: modelo.id, input: { name } });
+      }
 
-        <ModeloForm
-          initialName={template.name}
-          initialFields={schemaToDraft(template.schema)}
-          nameEditable={false}
-          submitLabel={`Criar v${template.version + 1}`}
-          onCancel={() => setEditandoSchema(false)}
-          onSubmit={async ({ schema }) => {
-            try {
-              const nova = await versionMutation.mutateAsync({ schema });
-              toast.success(`Versão v${nova.version} criada.`);
-              router.push(`${routes.modelos}/${nova.id}`);
-            } catch (err) {
-              toast.error(isApiError(err) ? err.message : "Falha ao criar nova versão.");
-            }
-          }}
-        />
-      </div>
-    );
+      if (camposMudaram) {
+        const nova = await versionMutation.mutateAsync({ schema });
+        toast.success("Modelo atualizado.");
+        // O id mudou: `replace` para o "voltar" do navegador não cair no id morto.
+        router.replace(`${routes.modelos}/${nova.id}`);
+        return;
+      }
+
+      toast.success("Modelo atualizado.");
+      router.push(routes.modelos);
+    } catch (err) {
+      toast.error(isApiError(err) ? err.message : "Falha ao salvar o modelo.");
+    }
   }
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title={template.name}
-        description={`Modelo #${template.id} · versão ${template.version} · ${template.active ? "ativo" : "inativo"}`}
+        title={modelo.name}
+        description="Altere o nome ou os campos deste modelo de exame."
         actions={
           <div className="flex gap-2">
             <Button asChild variant="outline">
@@ -145,138 +140,34 @@ function ModeloDetalhe({ template }: { template: ExamTemplate }) {
         }
       />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Identificação</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-end gap-2">
-            <FormField id="nome" label="Nome do modelo" className="flex-1">
-              <Input
-                id="nome"
-                value={nome}
-                onChange={(e) => setNome(e.target.value)}
-              />
-            </FormField>
-            <Button
-              variant="outline"
-              onClick={salvarNome}
-              disabled={
-                updateMutation.isPending ||
-                !nome.trim() ||
-                nome.trim() === template.name
-              }
-            >
-              Salvar
-            </Button>
-          </div>
+      <p className="rounded-lg bg-slate-50 px-4 py-3 text-sm text-slate-600">
+        Os exames já registrados com este modelo continuam exibindo os campos que
+        valiam quando foram feitos — editar aqui não altera laudos antigos.
+      </p>
 
-          <div className="flex items-center justify-between rounded-lg bg-slate-50 px-4 py-3">
-            <div>
-              <p className="text-sm font-medium text-slate-900">
-                {template.active ? "Modelo ativo" : "Modelo inativo"}
-              </p>
-              <p className="text-xs text-slate-500">
-                {template.active
-                  ? "Aparece na seleção de exames e pode receber novos registros."
-                  : "Não aparece na seleção de exames."}
-              </p>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={updateMutation.isPending}
-              onClick={async () => {
-                try {
-                  await updateMutation.mutateAsync({
-                    id: template.id,
-                    input: { active: !template.active },
-                  });
-                  toast.success(template.active ? "Modelo desativado." : "Modelo reativado.");
-                } catch (err) {
-                  toast.error(
-                    isApiError(err) ? err.message : "Falha ao atualizar modelo.",
-                  );
-                }
-              }}
-            >
-              {template.active ? "Desativar" : "Reativar"}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="flex-row items-start justify-between space-y-0">
-          <div>
-            <CardTitle>
-              Campos ({campos.length}) — v{template.version}
-            </CardTitle>
-            <p className="mt-1 text-sm text-slate-600">
-              O schema é imutável dentro de uma versão. Para alterá-lo, crie a
-              próxima versão — assim os laudos já emitidos continuam válidos.
-            </p>
-          </div>
-          <Button
-            variant="outline"
-            onClick={() => setEditandoSchema(true)}
-            disabled={!template.active}
-            title={
-              template.active
-                ? undefined
-                : "Só é possível criar nova versão a partir de um modelo ativo."
-            }
-          >
-            <GitBranch className="h-4 w-4" />
-            Nova versão
-          </Button>
-        </CardHeader>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
-                <tr>
-                  <th className="px-4 py-3 font-medium">Campo</th>
-                  <th className="px-4 py-3 font-medium">Referências</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {campos.map(([nomeCampo, field]) => (
-                  <tr key={nomeCampo}>
-                    <td className="px-4 py-3 align-top font-medium text-slate-900">
-                      {nomeCampo}
-                    </td>
-                    <td className="px-4 py-3">
-                      <dl className="space-y-1">
-                        {Object.entries(field.references ?? {}).map(([label, valor]) => (
-                          <div key={label} className="flex gap-2 text-xs">
-                            <dt className="min-w-24 font-medium text-slate-600">
-                              {label}
-                            </dt>
-                            <dd className="text-slate-500">{valor}</dd>
-                          </div>
-                        ))}
-                      </dl>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
+      <ModeloForm
+        // O id muda a cada gravação de campos; a key reinicia o formulário com o
+        // estado recém-salvo em vez de manter o anterior.
+        key={modelo.id}
+        initialName={modelo.name}
+        initialFields={schemaToDraft(modelo.schema)}
+        nomesEmUso={nomesEmUso}
+        submitLabel="Salvar alterações"
+        onCancel={() => router.push(routes.modelos)}
+        onSubmit={salvar}
+      />
 
       <ConfirmDialog
         open={confirmOpen}
         onOpenChange={setConfirmOpen}
         title="Excluir modelo"
-        description={`Excluir "${template.name}" v${template.version}? Exames já registrados continuam existindo, mas o modelo deixa de aparecer.`}
+        description={`Excluir "${modelo.name}"? Ele deixa de aparecer no cadastro de exames. Os exames já registrados continuam existindo.`}
         confirmLabel="Excluir"
         destructive
         loading={deleteMutation.isPending}
         onConfirm={async () => {
           try {
-            await deleteMutation.mutateAsync(template.id);
+            await deleteMutation.mutateAsync(modelo.id);
             toast.success("Modelo excluído.");
             router.push(routes.modelos);
           } catch (err) {

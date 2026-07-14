@@ -191,7 +191,7 @@ function DynamicExamForm({
     <div className="space-y-6">
       <PageHeader
         title={`Cadastrar — ${template.name}`}
-        description={`Paciente ${nomePaciente(paciente)} (#${paciente.id}) · modelo v${template.version}`}
+        description={`Paciente ${nomePaciente(paciente)} (#${paciente.id})`}
         actions={
           <Button asChild variant="outline">
             <Link href={`${routes.exames}/${idPaciente}/selecionar`}>
