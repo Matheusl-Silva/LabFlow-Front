@@ -7,8 +7,7 @@ import {
   type UseQueryResult,
 } from "@tanstack/react-query";
 import { examService } from "@/services/exam.service";
-import { examRepository } from "@/repositories/exam.repository";
-import type { Exam, ExamInput } from "@/types";
+import type { ExamDetail, ExamInput, ExamListItem } from "@/types";
 
 const KEYS = {
   detail: (id: number | string) => ["exam", String(id)] as const,
@@ -18,7 +17,7 @@ const KEYS = {
 
 export function useExamQuery(
   id: number | string | null | undefined,
-): UseQueryResult<Exam, Error> {
+): UseQueryResult<ExamDetail, Error> {
   return useQuery({
     queryKey: KEYS.detail(id ?? ""),
     queryFn: () => examService.buscar(id as number),
@@ -28,7 +27,7 @@ export function useExamQuery(
 
 export function useExamsByPatientQuery(
   patientId: number | string | null | undefined,
-): UseQueryResult<Exam[], Error> {
+): UseQueryResult<ExamListItem[], Error> {
   return useQuery({
     queryKey: KEYS.patientList(patientId ?? ""),
     queryFn: () => examService.listarPorPaciente(patientId as number),
@@ -47,7 +46,7 @@ export function useCreateExam(patientId: number | string) {
 export function useDeleteExam(patientId: number | string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number | string) => examRepository.delete(id),
+    mutationFn: (id: number | string) => examService.remover(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: KEYS.patientList(patientId) }),
   });
 }

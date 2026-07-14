@@ -12,7 +12,7 @@ import { usePacienteQuery } from "@/hooks/usePacientes";
 import { useExamTemplatesQuery } from "@/hooks/useExamTemplates";
 import { routes } from "@/constants/routes";
 import { cn } from "@/lib/utils";
-import type { ExamTemplate } from "@/types";
+import { nomePaciente, type ExamTemplate } from "@/types";
 
 const CARD_ACCENTS = [
   "from-brand-600 to-brand-800",
@@ -55,7 +55,7 @@ export default function SelecionarExamePage() {
     <div className="space-y-6">
       <PageHeader
         title="Selecionar exame"
-        description={`Escolha o tipo de exame para ${paciente.nome} (#${paciente.id}).`}
+        description={`Escolha o tipo de exame para ${nomePaciente(paciente)} (#${paciente.id}).`}
         actions={
           <Button asChild variant="outline">
             <Link href={`${routes.exames}/${paciente.id}`}>

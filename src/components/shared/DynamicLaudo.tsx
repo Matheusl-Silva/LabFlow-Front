@@ -1,83 +1,94 @@
 import { LaudoLayout, LaudoSecao } from "./LaudoLayout";
-import type { Exam, ExamFieldReferences, ExamTemplate, Paciente } from "@/types";
+import type { ExamDetail, ExamFieldReferences, ExamValue, Paciente } from "@/types";
 
 interface DynamicLaudoProps {
-  exam: Exam;
-  template: ExamTemplate;
+  exam: ExamDetail;
+  templateName: string;
   paciente: Paciente;
+  responsavelNome?: string | null;
+  preceptorNome?: string | null;
   variant?: "screen" | "print";
 }
 
-function formatValue(v: number | null | undefined): string {
-  if (v === null || v === undefined) return "—";
-  return Number.isInteger(v) ? String(v) : v.toFixed(2);
+function formatValue(v: ExamValue): string {
+  if (v === null || v === undefined || v === "") return "—";
+  return String(v);
 }
 
-function formatRef(ref: ExamFieldReferences): string {
-  const hasSex = ref.min_f || ref.max_f || ref.min_m || ref.max_m;
-  if (hasSex) {
-    const parts: string[] = [];
-    if (ref.min_f || ref.max_f) {
-      const vals = [ref.min_f && `≥${ref.min_f}`, ref.max_f && `≤${ref.max_f}`]
-        .filter(Boolean)
-        .join(" ");
-      parts.push(`F: ${vals}`);
-    }
-    if (ref.min_m || ref.max_m) {
-      const vals = [ref.min_m && `≥${ref.min_m}`, ref.max_m && `≤${ref.max_m}`]
-        .filter(Boolean)
-        .join(" ");
-      parts.push(`M: ${vals}`);
-    }
-    return parts.join(" · ");
-  }
-  return [ref.min && `≥${ref.min}`, ref.max && `≤${ref.max}`]
-    .filter(Boolean)
-    .join(" – ");
+/**
+ * As referências são um mapa livre de rótulo → texto (ex.: Masculino → "13,5 -
+ * 17,5 g/dL"), então não há faixa numérica a formatar: exibimos exatamente o que
+ * o template definiu.
+ */
+function ReferenciaCell({ references }: { references: ExamFieldReferences }) {
+  const entries = Object.entries(references ?? {});
+  if (entries.length === 0) return <span className="text-slate-400">—</span>;
+
+  // Referência única: o rótulo costuma ser redundante ("Adulto"), o valor basta.
+  if (entries.length === 1) return <span>{entries[0][1]}</span>;
+
+  return (
+    <ul className="space-y-0.5">
+      {entries.map(([label, value]) => (
+        <li key={label}>
+          <span className="font-medium text-slate-600">{label}:</span> <span>{value}</span>
+        </li>
+      ))}
+    </ul>
+  );
 }
 
 export function DynamicLaudo({
   exam,
-  template,
+  templateName,
   paciente,
+  responsavelNome,
+  preceptorNome,
   variant = "screen",
 }: DynamicLaudoProps) {
-  const schemaEntries = Object.entries(template.schema);
+  // A ordem de exibição é a do schema, não a de `data`: o schema é a fonte da
+  // verdade sobre quais campos o exame tem.
+  const campos = Object.entries(exam.schema);
 
   return (
     <LaudoLayout
-      title={template.name}
+      title={templateName}
       exameId={exam.id}
       data={exam.date}
       paciente={paciente}
-      responsavelNome={null}
-      preceptorNome={null}
+      responsavelNome={responsavelNome ?? exam.responsibleName}
+      preceptorNome={preceptorNome ?? exam.preceptorName}
       variant={variant}
     >
       <LaudoSecao title="Resultados" variant={variant}>
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-left text-xs uppercase tracking-wide text-slate-500">
-              <th className="py-2 font-medium">Exame</th>
-              <th className="py-2 font-medium">Resultado</th>
-              <th className="py-2 font-medium">Referência</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {schemaEntries.map(([key, field]) => {
-              const value = exam.data[key] ?? null;
-              const ref = field.references ? formatRef(field.references) : "—";
-              const label = field.label ?? key;
-              return (
-                <tr key={key}>
-                  <td className="py-2">{label}</td>
-                  <td className="py-2 font-medium tabular-nums">{formatValue(value)}</td>
-                  <td className="py-2 text-xs text-slate-500">{ref || "—"}</td>
+        {campos.length === 0 ? (
+          <p className="text-sm text-slate-500">
+            Este exame não possui campos definidos no template.
+          </p>
+        ) : (
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left text-xs uppercase tracking-wide text-slate-500">
+                <th className="py-2 font-medium">Exame</th>
+                <th className="py-2 font-medium">Resultado</th>
+                <th className="py-2 font-medium">Referência</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {campos.map(([nome, field]) => (
+                <tr key={nome}>
+                  <td className="py-2 align-top">{nome}</td>
+                  <td className="py-2 align-top font-medium tabular-nums">
+                    {formatValue(exam.data[nome] ?? null)}
+                  </td>
+                  <td className="py-2 align-top text-xs text-slate-500">
+                    <ReferenciaCell references={field.references} />
+                  </td>
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
+              ))}
+            </tbody>
+          </table>
+        )}
       </LaudoSecao>
     </LaudoLayout>
   );

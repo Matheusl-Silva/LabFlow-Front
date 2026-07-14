@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { ArrowLeft, ClipboardX, Plus } from "lucide-react";
@@ -15,11 +15,10 @@ import { TableSkeleton } from "@/components/tables/TableSkeleton";
 import { ConfirmDialog } from "@/components/modals/ConfirmDialog";
 import { useAuth } from "@/providers/AuthProvider";
 import { usePacienteQuery } from "@/hooks/usePacientes";
-import { useExamsByPatientQuery, useDeleteExam } from "@/hooks/useExam";
-import { useExamTemplatesQuery } from "@/hooks/useExamTemplates";
+import { useDeleteExam, useExamsByPatientQuery } from "@/hooks/useExam";
 import { isApiError } from "@/lib/http/errors";
 import { routes } from "@/constants/routes";
-import type { Exam } from "@/types";
+import { nomePaciente, type ExamListItem } from "@/types";
 
 import { HistoricoExamesTable } from "@/features/exames/components/HistoricoExamesTable";
 
@@ -31,15 +30,9 @@ export default function HistoricoExamesPage() {
 
   const pacienteQuery = usePacienteQuery(id);
   const examesQuery = useExamsByPatientQuery(id);
-  const templatesQuery = useExamTemplatesQuery();
   const deleteMutation = useDeleteExam(id!);
 
-  const [toDelete, setToDelete] = useState<Exam | null>(null);
-
-  const templateNames = useMemo<Record<number, string>>(() => {
-    if (!templatesQuery.data) return {};
-    return Object.fromEntries(templatesQuery.data.map((t) => [t.id, t.name]));
-  }, [templatesQuery.data]);
+  const [toDelete, setToDelete] = useState<ExamListItem | null>(null);
 
   if (pacienteQuery.isLoading) return <LoadingState label="Carregando paciente…" />;
 
@@ -76,8 +69,8 @@ export default function HistoricoExamesPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title={`Exames de ${paciente.nome}`}
-        description={`Paciente nº ${paciente.id} · ${paciente.email}`}
+        title={`Exames de ${nomePaciente(paciente)}`}
+        description={`Paciente nº ${paciente.id}${paciente.email ? ` · ${paciente.email}` : ""}`}
         actions={
           <div className="flex gap-2">
             <Button asChild variant="outline">
@@ -102,7 +95,7 @@ export default function HistoricoExamesPage() {
             query={examesQuery}
             loading={
               <div className="p-4">
-                <TableSkeleton rows={4} columns={4} />
+                <TableSkeleton rows={4} columns={5} />
               </div>
             }
             error={(refetch) => (
@@ -122,7 +115,6 @@ export default function HistoricoExamesPage() {
               <HistoricoExamesTable
                 idPaciente={paciente.id}
                 exames={exames}
-                templateNames={templateNames}
                 isAdmin={isAdmin}
                 onDelete={setToDelete}
                 empty={
@@ -152,7 +144,7 @@ export default function HistoricoExamesPage() {
         title="Excluir exame"
         description={
           toDelete
-            ? `Excluir o exame #${toDelete.id} (${templateNames[toDelete.examTemplateId] ?? `template #${toDelete.examTemplateId}`})? Esta ação não pode ser desfeita.`
+            ? `Excluir o exame #${toDelete.id} (${toDelete.templateName ?? "sem template"})? Esta ação não pode ser desfeita.`
             : undefined
         }
         confirmLabel="Excluir"

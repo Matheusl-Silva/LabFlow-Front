@@ -17,8 +17,9 @@ export function filterPacientes(
   return pacientes.filter((p) => {
     if (periodo && p.periodo !== periodo) return false;
     if (!term) return true;
+    // Campos identificadores são nulos na listagem anonimizada do usuário comum.
     return [String(p.id), p.nome, p.email, p.telefone, p.cpf]
-      .filter(Boolean)
+      .filter((v): v is string => !!v)
       .some((v) => v.toLowerCase().includes(term));
   });
 }

@@ -1,8 +1,8 @@
-import type { Exam, ExamInput } from "@/types";
+import type { ExamDetail, ExamInput, ExamListItem } from "@/types";
 
 export interface ExamRepository {
-  findById(id: number | string): Promise<Exam>;
-  findByPatient(patientId: number | string): Promise<Exam[]>;
-  create(input: ExamInput): Promise<Exam>;
+  findById(id: number | string): Promise<ExamDetail>;
+  findByPatient(patientId: number | string): Promise<ExamListItem[]>;
+  create(input: ExamInput): Promise<{ id: number }>;
   delete(id: number | string): Promise<void>;
 }

@@ -8,13 +8,30 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { PacienteForm } from "@/components/forms/PacienteForm";
+import { EmptyState } from "@/components/feedback/EmptyState";
 import { useCreatePaciente } from "@/hooks/usePacientes";
+import { useAuth } from "@/providers/AuthProvider";
 import { isApiError } from "@/lib/http/errors";
 import { routes } from "@/constants/routes";
 
 export default function NovoPacientePage() {
   const router = useRouter();
+  const { session } = useAuth();
   const createMutation = useCreatePaciente();
+
+  if (!session?.user.admin) {
+    return (
+      <EmptyState
+        title="Acesso restrito"
+        description="Somente administradores podem cadastrar pacientes."
+        action={
+          <Button asChild variant="outline">
+            <Link href={routes.pacientes}>Voltar para a lista</Link>
+          </Button>
+        }
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">

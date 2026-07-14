@@ -7,6 +7,7 @@ export const routes = {
   usuarios: "/usuarios",
   pacientes: "/pacientes",
   exames: "/exames",
+  templates: "/templates",
 } as const;
 
 export const PUBLIC_ROUTES: readonly string[] = [

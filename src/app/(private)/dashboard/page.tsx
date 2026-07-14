@@ -1,18 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, FlaskConical, UserCog, Users } from "lucide-react";
+import { ArrowRight, FileStack, UserCog, Users } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/providers/AuthProvider";
 import { usePacientesQuery } from "@/hooks/usePacientes";
 import { useUsuariosQuery } from "@/hooks/useUsuarios";
+import { useExamTemplatesQuery } from "@/hooks/useExamTemplates";
 import { routes } from "@/constants/routes";
 
 export default function DashboardPage() {
   const { session } = useAuth();
+  const isAdmin = !!session?.user.admin;
+
   const { data: pacientes, isLoading: loadingPacientes } = usePacientesQuery();
   const { data: usuarios, isLoading: loadingUsuarios } = useUsuariosQuery();
+  const { data: templates, isLoading: loadingTemplates } = useExamTemplatesQuery();
 
   const kpis = [
     {
@@ -21,7 +25,12 @@ export default function DashboardPage() {
       href: routes.pacientes,
       icon: Users,
     },
-    { label: "Exames", value: "—", href: routes.exames, icon: FlaskConical },
+    {
+      label: "Templates ativos",
+      value: loadingTemplates ? "…" : (templates?.length ?? 0).toString(),
+      href: isAdmin ? routes.templates : routes.exames,
+      icon: FileStack,
+    },
     {
       label: "Usuários",
       value: loadingUsuarios ? "…" : (usuarios?.length ?? 0).toString(),
@@ -62,18 +71,33 @@ export default function DashboardPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Próximos passos</CardTitle>
-          <CardDescription>Fluxos disponíveis nesta fase.</CardDescription>
+          <CardTitle>Como funciona</CardTitle>
+          <CardDescription>Os formulários de exame são montados a partir dos templates.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-2 text-sm text-slate-600">
+          {isAdmin && (
+            <p>
+              1. Defina os campos de cada exame em{" "}
+              <Link href={routes.templates} className="font-medium text-brand-700 hover:underline">
+                Templates
+              </Link>
+              . Cada template vira um formulário.
+            </p>
+          )}
           <p>
-            • Comece cadastrando pacientes em{" "}
+            {isAdmin ? "2." : "1."} Cadastre o paciente em{" "}
             <Link href={routes.pacientes} className="font-medium text-brand-700 hover:underline">
               Pacientes
             </Link>
             .
           </p>
-          <p>• Telas de Exames e Usuários entram nas próximas fases.</p>
+          <p>
+            {isAdmin ? "3." : "2."} Registre o resultado em{" "}
+            <Link href={routes.exames} className="font-medium text-brand-700 hover:underline">
+              Exames
+            </Link>
+            , escolhendo o template desejado.
+          </p>
         </CardContent>
       </Card>
     </div>
