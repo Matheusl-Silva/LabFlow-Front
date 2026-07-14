@@ -21,7 +21,10 @@ import {
   type PeriodoFilter,
 } from "@/features/pacientes/components/PacientesFilters";
 import { PacientesTable } from "@/features/pacientes/components/PacientesTable";
-import { filterPacientes } from "@/features/pacientes/lib/filterPacientes";
+import {
+  filterPacientes,
+  sortPacientesByCadastroDesc,
+} from "@/features/pacientes/lib/filterPacientes";
 
 export default function PacientesPage() {
   const { session } = useAuth();
@@ -97,7 +100,9 @@ export default function PacientesPage() {
       >
         {(data) => (
           <PacientesTable
-            pacientes={filterPacientes(data, { search, periodo })}
+            pacientes={sortPacientesByCadastroDesc(
+              filterPacientes(data, { search, periodo }),
+            )}
             isAdmin={isAdmin}
             onDelete={setToDelete}
             empty={

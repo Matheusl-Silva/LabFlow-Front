@@ -10,10 +10,20 @@ import { examService } from "@/services/exam.service";
 import type { ExamDetail, ExamInput, ExamListItem } from "@/types";
 
 const KEYS = {
+  count: ["exams", "count"] as const,
   detail: (id: number | string) => ["exam", String(id)] as const,
   patientList: (patientId: number | string) =>
     ["exams", "patient", String(patientId)] as const,
 };
+
+/** Total de exames. `GET /exam` é admin-only, daí o `enabled`. */
+export function useExamsCountQuery(enabled = true): UseQueryResult<number, Error> {
+  return useQuery({
+    queryKey: KEYS.count,
+    queryFn: () => examService.contarTodos(),
+    enabled,
+  });
+}
 
 export function useExamQuery(
   id: number | string | null | undefined,

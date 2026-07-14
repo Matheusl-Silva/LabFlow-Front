@@ -93,14 +93,9 @@ export function PacientesTable({
     idColumn,
     periodoColumn,
     {
-      key: "medicamento",
-      header: "Medicação",
-      cell: (p) => p.medicamento ?? "—",
-    },
-    {
-      key: "patologia",
-      header: "Patologia",
-      cell: (p) => p.patologia ?? "—",
+      key: "cadastro",
+      header: "Cadastrado em",
+      cell: (p) => formatDate(p.criadoEm),
     },
     {
       key: "acoes",

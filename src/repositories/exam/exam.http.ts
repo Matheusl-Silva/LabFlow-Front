@@ -58,6 +58,11 @@ function toDetail(api: ExamDetailApi): ExamDetail {
 }
 
 export const httpExamRepository: ExamRepository = {
+  async countAll() {
+    const { data } = await httpClient.get<unknown[]>(endpoints.exam.base);
+    return Array.isArray(data) ? data.length : 0;
+  },
+
   async findById(id) {
     const { data } = await httpClient.get<ExamDetailApi>(endpoints.exam.byId(id));
     return toDetail(data);

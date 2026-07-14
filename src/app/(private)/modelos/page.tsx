@@ -21,7 +21,7 @@ import { isApiError } from "@/lib/http/errors";
 import { routes } from "@/constants/routes";
 import type { ExamTemplate } from "@/types";
 
-export default function TemplatesPage() {
+export default function ModelosPage() {
   const { session } = useAuth();
   const isAdmin = !!session?.user.admin;
 
@@ -46,7 +46,7 @@ export default function TemplatesPage() {
       <EmptyState
         icon={<FileStack className="h-5 w-5" />}
         title="Acesso restrito"
-        description="Somente administradores podem gerenciar os templates de exame."
+        description="Somente administradores podem gerenciar os modelos de exame."
         action={
           <Button asChild variant="outline">
             <Link href={routes.dashboard}>Voltar ao início</Link>
@@ -68,7 +68,7 @@ export default function TemplatesPage() {
           : `"${template.name}" v${template.version} reativado.`,
       );
     } catch (err) {
-      toast.error(isApiError(err) ? err.message : "Falha ao atualizar template.");
+      toast.error(isApiError(err) ? err.message : "Falha ao atualizar modelo.");
     }
   }
 
@@ -76,10 +76,10 @@ export default function TemplatesPage() {
     if (!toDelete) return;
     try {
       await deleteMutation.mutateAsync(toDelete.id);
-      toast.success(`Template "${toDelete.name}" excluído.`);
+      toast.success(`Modelo "${toDelete.name}" excluído.`);
       setToDelete(null);
     } catch (err) {
-      toast.error(isApiError(err) ? err.message : "Falha ao excluir template.");
+      toast.error(isApiError(err) ? err.message : "Falha ao excluir modelo.");
     }
   }
 
@@ -95,7 +95,7 @@ export default function TemplatesPage() {
       cell: (t) => (
         <div className="min-w-0">
           <Link
-            href={`${routes.templates}/${t.id}`}
+            href={`${routes.modelos}/${t.id}`}
             className="truncate font-medium text-slate-900 hover:text-brand-700 hover:underline"
           >
             {t.name}
@@ -142,7 +142,7 @@ export default function TemplatesPage() {
             {t.active ? "Desativar" : "Reativar"}
           </Button>
           <Button asChild variant="ghost" size="sm">
-            <Link href={`${routes.templates}/${t.id}`}>Abrir</Link>
+            <Link href={`${routes.modelos}/${t.id}`}>Abrir</Link>
           </Button>
         </div>
       ),
@@ -152,13 +152,13 @@ export default function TemplatesPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Templates de exame"
-        description="Cada template define, dinamicamente, os campos que o formulário de exame vai ter."
+        title="Modelos de exame"
+        description="Cada modelo define, dinamicamente, os campos que o formulário de exame vai ter."
         actions={
           <Button asChild>
-            <Link href={`${routes.templates}/novo`}>
+            <Link href={`${routes.modelos}/novo`}>
               <Plus className="h-4 w-4" />
-              Novo template
+              Novo modelo
             </Link>
           </Button>
         }
@@ -171,7 +171,7 @@ export default function TemplatesPage() {
           onChange={(e) => setSomenteAtivos(e.target.checked)}
           className="h-4 w-4 rounded border-slate-300"
         />
-        Mostrar somente templates ativos
+        Mostrar somente modelos ativos
       </label>
 
       <Async
@@ -200,15 +200,15 @@ export default function TemplatesPage() {
                 icon={<FileStack className="h-5 w-5" />}
                 title={
                   somenteAtivos
-                    ? "Nenhum template ativo"
-                    : "Nenhum template cadastrado"
+                    ? "Nenhum modelo ativo"
+                    : "Nenhum modelo cadastrado"
                 }
-                description="Crie o primeiro template para começar a registrar exames."
+                description="Crie o primeiro modelo para começar a registrar exames."
                 action={
                   <Button asChild>
-                    <Link href={`${routes.templates}/novo`}>
+                    <Link href={`${routes.modelos}/novo`}>
                       <Plus className="h-4 w-4" />
-                      Novo template
+                      Novo modelo
                     </Link>
                   </Button>
                 }
@@ -221,10 +221,10 @@ export default function TemplatesPage() {
       <ConfirmDialog
         open={!!toDelete}
         onOpenChange={(open) => !open && setToDelete(null)}
-        title="Excluir template"
+        title="Excluir modelo"
         description={
           toDelete
-            ? `Excluir "${toDelete.name}" v${toDelete.version}? Exames já registrados com ele continuam existindo, mas o template deixa de aparecer.`
+            ? `Excluir "${toDelete.name}" v${toDelete.version}? Exames já registrados com ele continuam existindo, mas o modelo deixa de aparecer.`
             : undefined
         }
         confirmLabel="Excluir"

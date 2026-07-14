@@ -23,3 +23,19 @@ export function filterPacientes(
       .some((v) => v.toLowerCase().includes(term));
   });
 }
+
+/**
+ * Mais recentes primeiro. Pacientes sem data de cadastro (não deveria acontecer,
+ * mas o campo é anulável no tipo) caem para o fim em vez de bagunçar a ordem.
+ *
+ * Como a API não pagina, ordenar aqui equivale a ordenar no banco. Se um dia
+ * `GET /patient` passar a paginar, isso precisa virar um `order` na query.
+ */
+export function sortPacientesByCadastroDesc(pacientes: Paciente[]): Paciente[] {
+  const at = (p: Paciente) => {
+    const t = p.criadoEm ? Date.parse(p.criadoEm) : NaN;
+    return Number.isNaN(t) ? -Infinity : t;
+  };
+  // Desempate por id desc: cadastros no mesmo instante mantêm ordem estável.
+  return [...pacientes].sort((a, b) => at(b) - at(a) || b.id - a.id);
+}

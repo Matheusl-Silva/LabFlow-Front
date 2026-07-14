@@ -14,7 +14,7 @@ import {
   type ExamTemplateSchema,
 } from "@/types";
 
-interface TemplateFormProps {
+interface ModeloFormProps {
   /** Undefined quando é uma nova versão: o nome é herdado e não pode mudar. */
   initialName?: string;
   initialFields?: ExamFieldDraft[];
@@ -24,14 +24,14 @@ interface TemplateFormProps {
   onCancel: () => void;
 }
 
-export function TemplateForm({
+export function ModeloForm({
   initialName = "",
   initialFields,
   nameEditable = true,
   submitLabel,
   onSubmit,
   onCancel,
-}: TemplateFormProps) {
+}: ModeloFormProps) {
   const [name, setName] = useState(initialName);
   const [fields, setFields] = useState<ExamFieldDraft[]>(
     initialFields?.length ? initialFields : [emptyField()],
@@ -45,7 +45,7 @@ export function TemplateForm({
     e.preventDefault();
 
     if (nameEditable && !name.trim()) {
-      setError("Informe o nome do template.");
+      setError("Informe o nome do modelo.");
       return;
     }
     // Mesmas regras do validador da API — falhar aqui evita um 400 previsível.
@@ -70,7 +70,7 @@ export function TemplateForm({
         <CardContent className="space-y-5 p-6">
           <FormField
             id="template-name"
-            label="Nome do template"
+            label="Nome do modelo"
             required={nameEditable}
             hint={
               nameEditable

@@ -8,13 +8,30 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { UsuarioCreateForm } from "@/components/forms/usuario";
+import { EmptyState } from "@/components/feedback/EmptyState";
 import { useCreateUsuario } from "@/hooks/useUsuarios";
+import { useAuth } from "@/providers/AuthProvider";
 import { isApiError } from "@/lib/http/errors";
 import { routes } from "@/constants/routes";
 
 export default function NovoUsuarioPage() {
   const router = useRouter();
+  const { session } = useAuth();
   const createMutation = useCreateUsuario();
+
+  if (!session?.user.admin) {
+    return (
+      <EmptyState
+        title="Acesso restrito"
+        description="Somente administradores podem cadastrar usuários."
+        action={
+          <Button asChild variant="outline">
+            <Link href={routes.dashboard}>Voltar ao início</Link>
+          </Button>
+        }
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">

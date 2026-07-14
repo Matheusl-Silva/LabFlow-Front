@@ -13,7 +13,7 @@ import { FormField } from "@/components/forms/FormField";
 import { LoadingState } from "@/components/feedback/LoadingState";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { ConfirmDialog } from "@/components/modals/ConfirmDialog";
-import { TemplateForm } from "@/features/templates/components/TemplateForm";
+import { ModeloForm } from "@/features/modelos/components/ModeloForm";
 import { useAuth } from "@/providers/AuthProvider";
 import {
   useCreateExamTemplateVersion,
@@ -25,7 +25,7 @@ import { isApiError } from "@/lib/http/errors";
 import { routes } from "@/constants/routes";
 import { schemaToDraft, type ExamTemplate } from "@/types";
 
-export default function TemplateDetalhePage() {
+export default function ModeloDetalhePage() {
   const params = useParams<{ id: string }>();
   const id = params?.id;
   const { session } = useAuth();
@@ -36,7 +36,7 @@ export default function TemplateDetalhePage() {
     return (
       <EmptyState
         title="Acesso restrito"
-        description="Somente administradores podem gerenciar templates de exame."
+        description="Somente administradores podem gerenciar modelos de exame."
         action={
           <Button asChild variant="outline">
             <Link href={routes.dashboard}>Voltar ao início</Link>
@@ -46,26 +46,26 @@ export default function TemplateDetalhePage() {
     );
   }
 
-  if (isLoading) return <LoadingState label="Carregando template…" />;
+  if (isLoading) return <LoadingState label="Carregando modelo…" />;
 
   if (isError || !template) {
     return (
       <EmptyState
-        title="Template não encontrado"
-        description={`O template #${id} não existe ou foi removido.`}
+        title="Modelo não encontrado"
+        description={`O modelo #${id} não existe ou foi removido.`}
         action={
           <Button asChild variant="outline">
-            <Link href={routes.templates}>Voltar para a lista</Link>
+            <Link href={routes.modelos}>Voltar para a lista</Link>
           </Button>
         }
       />
     );
   }
 
-  return <TemplateDetalhe template={template} />;
+  return <ModeloDetalhe template={template} />;
 }
 
-function TemplateDetalhe({ template }: { template: ExamTemplate }) {
+function ModeloDetalhe({ template }: { template: ExamTemplate }) {
   const router = useRouter();
   const updateMutation = useUpdateExamTemplate();
   const deleteMutation = useDeleteExamTemplate();
@@ -86,7 +86,7 @@ function TemplateDetalhe({ template }: { template: ExamTemplate }) {
       });
       toast.success("Nome atualizado.");
     } catch (err) {
-      toast.error(isApiError(err) ? err.message : "Falha ao renomear template.");
+      toast.error(isApiError(err) ? err.message : "Falha ao renomear modelo.");
     }
   }
 
@@ -104,7 +104,7 @@ function TemplateDetalhe({ template }: { template: ExamTemplate }) {
           }
         />
 
-        <TemplateForm
+        <ModeloForm
           initialName={template.name}
           initialFields={schemaToDraft(template.schema)}
           nameEditable={false}
@@ -114,7 +114,7 @@ function TemplateDetalhe({ template }: { template: ExamTemplate }) {
             try {
               const nova = await versionMutation.mutateAsync({ schema });
               toast.success(`Versão v${nova.version} criada.`);
-              router.push(`${routes.templates}/${nova.id}`);
+              router.push(`${routes.modelos}/${nova.id}`);
             } catch (err) {
               toast.error(isApiError(err) ? err.message : "Falha ao criar nova versão.");
             }
@@ -128,11 +128,11 @@ function TemplateDetalhe({ template }: { template: ExamTemplate }) {
     <div className="space-y-6">
       <PageHeader
         title={template.name}
-        description={`Template #${template.id} · versão ${template.version} · ${template.active ? "ativo" : "inativo"}`}
+        description={`Modelo #${template.id} · versão ${template.version} · ${template.active ? "ativo" : "inativo"}`}
         actions={
           <div className="flex gap-2">
             <Button asChild variant="outline">
-              <Link href={routes.templates}>
+              <Link href={routes.modelos}>
                 <ArrowLeft className="h-4 w-4" />
                 Voltar
               </Link>
@@ -151,7 +151,7 @@ function TemplateDetalhe({ template }: { template: ExamTemplate }) {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-end gap-2">
-            <FormField id="nome" label="Nome do template" className="flex-1">
+            <FormField id="nome" label="Nome do modelo" className="flex-1">
               <Input
                 id="nome"
                 value={nome}
@@ -174,7 +174,7 @@ function TemplateDetalhe({ template }: { template: ExamTemplate }) {
           <div className="flex items-center justify-between rounded-lg bg-slate-50 px-4 py-3">
             <div>
               <p className="text-sm font-medium text-slate-900">
-                {template.active ? "Template ativo" : "Template inativo"}
+                {template.active ? "Modelo ativo" : "Modelo inativo"}
               </p>
               <p className="text-xs text-slate-500">
                 {template.active
@@ -192,10 +192,10 @@ function TemplateDetalhe({ template }: { template: ExamTemplate }) {
                     id: template.id,
                     input: { active: !template.active },
                   });
-                  toast.success(template.active ? "Template desativado." : "Template reativado.");
+                  toast.success(template.active ? "Modelo desativado." : "Modelo reativado.");
                 } catch (err) {
                   toast.error(
-                    isApiError(err) ? err.message : "Falha ao atualizar template.",
+                    isApiError(err) ? err.message : "Falha ao atualizar modelo.",
                   );
                 }
               }}
@@ -224,7 +224,7 @@ function TemplateDetalhe({ template }: { template: ExamTemplate }) {
             title={
               template.active
                 ? undefined
-                : "A API só cria nova versão a partir de um template ativo."
+                : "Só é possível criar nova versão a partir de um modelo ativo."
             }
           >
             <GitBranch className="h-4 w-4" />
@@ -269,18 +269,18 @@ function TemplateDetalhe({ template }: { template: ExamTemplate }) {
       <ConfirmDialog
         open={confirmOpen}
         onOpenChange={setConfirmOpen}
-        title="Excluir template"
-        description={`Excluir "${template.name}" v${template.version}? Exames já registrados continuam existindo, mas o template deixa de aparecer.`}
+        title="Excluir modelo"
+        description={`Excluir "${template.name}" v${template.version}? Exames já registrados continuam existindo, mas o modelo deixa de aparecer.`}
         confirmLabel="Excluir"
         destructive
         loading={deleteMutation.isPending}
         onConfirm={async () => {
           try {
             await deleteMutation.mutateAsync(template.id);
-            toast.success("Template excluído.");
-            router.push(routes.templates);
+            toast.success("Modelo excluído.");
+            router.push(routes.modelos);
           } catch (err) {
-            toast.error(isApiError(err) ? err.message : "Falha ao excluir template.");
+            toast.error(isApiError(err) ? err.message : "Falha ao excluir modelo.");
           }
         }}
       />

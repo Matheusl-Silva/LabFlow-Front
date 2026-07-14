@@ -25,7 +25,9 @@ import { filterUsuarios } from "@/features/usuarios/lib/filterUsuarios";
 
 export default function UsuariosPage() {
   const { session } = useAuth();
-  const query = useUsuariosQuery();
+  const isAdmin = !!session?.user.admin;
+
+  const query = useUsuariosQuery(isAdmin);
   const deleteMutation = useDeleteUsuario();
 
   const [search, setSearch] = useState("");
@@ -33,6 +35,21 @@ export default function UsuariosPage() {
   const [toDelete, setToDelete] = useState<Usuario | null>(null);
 
   const filtrouAlgo = !!search || !!tipo;
+
+  if (!isAdmin) {
+    return (
+      <EmptyState
+        icon={<UserCog className="h-5 w-5" />}
+        title="Acesso restrito"
+        description="Somente administradores podem ver os usuários do sistema."
+        action={
+          <Button asChild variant="outline">
+            <Link href={routes.dashboard}>Voltar ao início</Link>
+          </Button>
+        }
+      />
+    );
+  }
 
   async function handleDelete() {
     if (!toDelete) return;

@@ -7,15 +7,15 @@ export const PERIODO_API: Record<Periodo, string> = {
 };
 
 /**
- * Atenção: `GET /patient` devolve payloads diferentes por perfil.
+ * Atenção: `GET /patient` e `GET /patient/:id` devolvem payloads diferentes por
+ * perfil (patient.service.ts):
  *
  *   admin → paciente completo
- *   comum → apenas `{id, period, medication, pathology}` — lista anonimizada,
- *           por decisão da própria API (patient.service.ts#getPrivate)
+ *   comum → apenas `{id, period, createdAt}` — sem dado pessoal (nome, e-mail,
+ *           CPF, telefone, nascimento) e sem dado de saúde (medicação, patologia)
  *
- * Já `GET /patient/:id` devolve o paciente completo para ambos. Por isso os
- * campos identificadores são anuláveis: quem consome a lista tem que aguentar
- * a versão anonimizada sem quebrar.
+ * Por isso todo campo além de `id` é anulável: quem consome a lista tem que
+ * aguentar a versão anonimizada sem quebrar.
  */
 export interface Paciente {
   id: number;
@@ -27,6 +27,7 @@ export interface Paciente {
   cpf: string | null;
   medicamento: string | null;
   patologia: string | null;
+  criadoEm: string | null;
 }
 
 export interface PacienteInput {

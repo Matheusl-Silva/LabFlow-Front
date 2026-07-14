@@ -7,13 +7,13 @@ import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/feedback/EmptyState";
-import { TemplateForm } from "@/features/templates/components/TemplateForm";
+import { ModeloForm } from "@/features/modelos/components/ModeloForm";
 import { useAuth } from "@/providers/AuthProvider";
 import { useCreateExamTemplate } from "@/hooks/useExamTemplates";
 import { isApiError } from "@/lib/http/errors";
 import { routes } from "@/constants/routes";
 
-export default function NovoTemplatePage() {
+export default function NovoModeloPage() {
   const router = useRouter();
   const { session } = useAuth();
   const createMutation = useCreateExamTemplate();
@@ -22,7 +22,7 @@ export default function NovoTemplatePage() {
     return (
       <EmptyState
         title="Acesso restrito"
-        description="Somente administradores podem criar templates de exame."
+        description="Somente administradores podem criar modelos de exame."
         action={
           <Button asChild variant="outline">
             <Link href={routes.dashboard}>Voltar ao início</Link>
@@ -35,11 +35,11 @@ export default function NovoTemplatePage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Novo template"
+        title="Novo modelo"
         description="Defina os campos que o formulário deste exame vai ter."
         actions={
           <Button asChild variant="outline">
-            <Link href={routes.templates}>
+            <Link href={routes.modelos}>
               <ArrowLeft className="h-4 w-4" />
               Voltar
             </Link>
@@ -47,16 +47,16 @@ export default function NovoTemplatePage() {
         }
       />
 
-      <TemplateForm
-        submitLabel="Criar template"
-        onCancel={() => router.push(routes.templates)}
+      <ModeloForm
+        submitLabel="Criar modelo"
+        onCancel={() => router.push(routes.modelos)}
         onSubmit={async ({ name, schema }) => {
           try {
             const template = await createMutation.mutateAsync({ name, schema });
             toast.success(`Template "${template.name}" criado.`);
-            router.push(routes.templates);
+            router.push(routes.modelos);
           } catch (err) {
-            toast.error(isApiError(err) ? err.message : "Falha ao criar template.");
+            toast.error(isApiError(err) ? err.message : "Falha ao criar modelo.");
           }
         }}
       />

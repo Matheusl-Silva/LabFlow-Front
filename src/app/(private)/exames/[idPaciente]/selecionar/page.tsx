@@ -68,10 +68,10 @@ export default function SelecionarExamePage() {
 
       <Async
         query={templatesQuery}
-        loading={<LoadingState label="Carregando templates…" />}
+        loading={<LoadingState label="Modelos…" />}
         error={(refetch) => (
           <EmptyState
-            title="Erro ao carregar templates"
+            title="Erro ao carregar modelos"
             description="Não foi possível buscar os tipos de exame disponíveis."
             action={
               <Button variant="outline" onClick={refetch}>
@@ -83,7 +83,7 @@ export default function SelecionarExamePage() {
         isEmpty={(data) => data.length === 0}
         empty={() => (
           <EmptyState
-            title="Nenhum template disponível"
+            title="Nenhum modelo disponível"
             description="Não há tipos de exame cadastrados no sistema."
           />
         )}

@@ -63,7 +63,7 @@ export function DynamicLaudo({
       <LaudoSecao title="Resultados" variant={variant}>
         {campos.length === 0 ? (
           <p className="text-sm text-slate-500">
-            Este exame não possui campos definidos no template.
+            Este exame não possui campos definidos no modelo.
           </p>
         ) : (
           <table className="w-full text-sm">

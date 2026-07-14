@@ -4,9 +4,9 @@ import { PERIODO_API, type Paciente, type PacienteInput, type Periodo } from "@/
 import type { PacienteRepository } from "./paciente.repository";
 
 /**
- * Todos os campos são opcionais de propósito: em `GET /patient` o usuário comum
- * recebe apenas `{id, period, medication, pathology}`. Assumir o payload
- * completo aqui derrubava a listagem com um TypeError em `phone.replace`.
+ * Todos os campos são opcionais de propósito: o usuário comum recebe apenas
+ * `{id, period, createdAt}`. Assumir o payload completo aqui derrubava a
+ * listagem com um TypeError em `phone.replace`.
  */
 interface PatientApi {
   id: number;
@@ -18,6 +18,7 @@ interface PatientApi {
   cpf?: string | null;
   medication?: string | null;
   pathology?: string | null;
+  createdAt?: string | null;
 }
 
 const digits = (v: string | null | undefined) => (v ? v.replace(/\D/g, "") : null);
@@ -38,6 +39,7 @@ function toDomain(p: PatientApi): Paciente {
     cpf: digits(p.cpf),
     medicamento: p.medication ?? null,
     patologia: p.pathology ?? null,
+    criadoEm: p.createdAt ?? null,
   };
 }
 

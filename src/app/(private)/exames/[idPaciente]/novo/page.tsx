@@ -73,7 +73,7 @@ export default function NovoExameDinamicoPage() {
   if (!templateId) {
     return (
       <EmptyState
-        title="Template não especificado"
+        title="Modelo não especificado"
         description="Selecione um tipo de exame antes de continuar."
         action={
           <Button asChild variant="outline">
@@ -111,8 +111,8 @@ export default function NovoExameDinamicoPage() {
   if (templateError || !template) {
     return (
       <EmptyState
-        title="Template não encontrado"
-        description={`O template #${templateId} não existe ou foi removido.`}
+        title="Modelo não encontrado"
+        description={`O modelo #${templateId} não existe ou foi removido.`}
         action={
           <Button asChild variant="outline">
             <Link href={`${routes.exames}/${idPaciente}/selecionar`}>
@@ -191,7 +191,7 @@ function DynamicExamForm({
     <div className="space-y-6">
       <PageHeader
         title={`Cadastrar — ${template.name}`}
-        description={`Paciente ${nomePaciente(paciente)} (#${paciente.id}) · template v${template.version}`}
+        description={`Paciente ${nomePaciente(paciente)} (#${paciente.id}) · modelo v${template.version}`}
         actions={
           <Button asChild variant="outline">
             <Link href={`${routes.exames}/${idPaciente}/selecionar`}>
@@ -278,7 +278,7 @@ function DynamicExamForm({
 
               {campos.length === 0 ? (
                 <p className="text-sm text-slate-500">
-                  Este template não tem campos definidos.
+                  Este modelo não tem campos definidos.
                 </p>
               ) : (
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
