@@ -19,7 +19,7 @@ const nav = [
   { href: routes.dashboard, label: "Dashboard", icon: LayoutDashboard, adminOnly: false },
   { href: routes.pacientes, label: "Pacientes", icon: Users, adminOnly: false },
   { href: routes.exames, label: "Exames", icon: FlaskConical, adminOnly: false },
-  { href: routes.modelos, label: "Modelos", icon: FileStack, adminOnly: true },
+  { href: routes.modelos, label: "Modelos de exame", icon: FileStack, adminOnly: true },
   { href: routes.usuarios, label: "Usuários", icon: UserCog, adminOnly: true },
 ];
 

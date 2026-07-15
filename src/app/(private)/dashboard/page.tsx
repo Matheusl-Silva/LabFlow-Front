@@ -97,7 +97,7 @@ export default function DashboardPage() {
             <p>
               1. Defina os campos de cada exame em{" "}
               <Link href={routes.modelos} className="font-medium text-brand-700 hover:underline">
-                Modelos
+                Modelos de exame
               </Link>
               . Cada modelo vira um formulário.
             </p>
