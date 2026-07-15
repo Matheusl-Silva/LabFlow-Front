@@ -9,6 +9,8 @@ export const routes = {
   exames: "/exames",
   /** "Template" na API; para o usuário, é "modelo" (de exame). */
   modelos: "/modelos",
+  /** Anamnese de enfermagem — admin-only. */
+  anamneses: "/anamneses",
 } as const;
 
 export const PUBLIC_ROUTES: readonly string[] = [
