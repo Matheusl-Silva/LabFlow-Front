@@ -1,46 +1,60 @@
 import { httpClient } from "@/lib/http/client";
 import { endpoints } from "@/lib/http/endpoints";
-import type { Paciente, PacienteInput } from "@/types";
+import { PERIODO_API, type Paciente, type PacienteInput, type Periodo } from "@/types";
 import type { PacienteRepository } from "./paciente.repository";
 
+/**
+ * Todos os campos são opcionais de propósito: o usuário comum recebe apenas
+ * `{id, period, createdAt}`. Assumir o payload completo aqui derrubava a
+ * listagem com um TypeError em `phone.replace`.
+ */
 interface PatientApi {
   id: number;
-  name: string;
-  email: string;
-  period: string;
-  birthDate: string;
-  phone: string;
-  cpf: string;
-  medication: string | null;
-  pathology: string | null;
+  name?: string | null;
+  email?: string | null;
+  period?: string | null;
+  birthDate?: string | null;
+  phone?: string | null;
+  cpf?: string | null;
+  medication?: string | null;
+  pathology?: string | null;
+  createdAt?: string | null;
+}
+
+const digits = (v: string | null | undefined) => (v ? v.replace(/\D/g, "") : null);
+
+function toPeriodo(period: string | null | undefined): Periodo | null {
+  const normalized = period?.toLowerCase();
+  return normalized === "matutino" || normalized === "noturno" ? normalized : null;
 }
 
 function toDomain(p: PatientApi): Paciente {
   return {
     id: p.id,
-    nome: p.name,
-    email: p.email,
-    periodo: p.period.toLowerCase() as Paciente["periodo"],
-    dataNascimento:
-      typeof p.birthDate === "string" ? p.birthDate.slice(0, 10) : String(p.birthDate),
-    telefone: p.phone.replace(/\D/g, ""),
-    cpf: p.cpf.replace(/\D/g, ""),
+    nome: p.name ?? null,
+    email: p.email ?? null,
+    periodo: toPeriodo(p.period),
+    dataNascimento: p.birthDate ? String(p.birthDate).slice(0, 10) : null,
+    telefone: digits(p.phone),
+    cpf: digits(p.cpf),
     medicamento: p.medication ?? null,
     patologia: p.pathology ?? null,
+    criadoEm: p.createdAt ?? null,
   };
 }
 
 function toApi(input: PacienteInput) {
-  const period = input.periodo.charAt(0).toUpperCase() + input.periodo.slice(1);
   return {
     name: input.nome,
     email: input.email,
-    period,
+    period: PERIODO_API[input.periodo],
     birthDate: input.dataNascimento,
     phone: input.telefone,
     cpf: input.cpf,
-    medication: input.medicamento ?? null,
-    pathology: input.patologia ?? null,
+    // null (e não "") para limpar o campo: o DTO usa @IsOptional, que ignora null,
+    // mas rejeitaria uma string vazia em alguns validadores.
+    medication: input.medicamento?.trim() || null,
+    pathology: input.patologia?.trim() || null,
   };
 }
 

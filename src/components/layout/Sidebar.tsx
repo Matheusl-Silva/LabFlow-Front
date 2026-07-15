@@ -7,17 +7,20 @@ import {
   LayoutDashboard,
   Users,
   UserCog,
+  FileStack,
   FlaskConical,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { routes } from "@/constants/routes";
+import { useAuth } from "@/providers/AuthProvider";
 
 const nav = [
-  { href: routes.dashboard, label: "Dashboard", icon: LayoutDashboard },
-  { href: routes.pacientes, label: "Pacientes", icon: Users },
-  { href: routes.exames, label: "Exames", icon: FlaskConical },
-  { href: routes.usuarios, label: "Usuários", icon: UserCog },
+  { href: routes.dashboard, label: "Dashboard", icon: LayoutDashboard, adminOnly: false },
+  { href: routes.pacientes, label: "Pacientes", icon: Users, adminOnly: false },
+  { href: routes.exames, label: "Exames", icon: FlaskConical, adminOnly: false },
+  { href: routes.modelos, label: "Modelos de exame", icon: FileStack, adminOnly: true },
+  { href: routes.usuarios, label: "Usuários", icon: UserCog, adminOnly: true },
 ];
 
 interface SidebarProps {
@@ -27,6 +30,9 @@ interface SidebarProps {
 
 export function Sidebar({ open, onClose }: SidebarProps) {
   const pathname = usePathname();
+  const { session } = useAuth();
+  const isAdmin = !!session?.user.admin;
+  const items = nav.filter((item) => !item.adminOnly || isAdmin);
 
   return (
     <>
@@ -63,7 +69,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
         </div>
 
         <nav className="flex-1 space-y-1 px-3 py-4">
-          {nav.map((item) => {
+          {items.map((item) => {
             const active =
               pathname === item.href || pathname.startsWith(`${item.href}/`);
             const Icon = item.icon;

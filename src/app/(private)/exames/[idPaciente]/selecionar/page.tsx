@@ -12,7 +12,7 @@ import { usePacienteQuery } from "@/hooks/usePacientes";
 import { useExamTemplatesQuery } from "@/hooks/useExamTemplates";
 import { routes } from "@/constants/routes";
 import { cn } from "@/lib/utils";
-import type { ExamTemplate } from "@/types";
+import { nomePaciente, type ExamTemplate } from "@/types";
 
 const CARD_ACCENTS = [
   "from-brand-600 to-brand-800",
@@ -55,7 +55,7 @@ export default function SelecionarExamePage() {
     <div className="space-y-6">
       <PageHeader
         title="Selecionar exame"
-        description={`Escolha o tipo de exame para ${paciente.nome} (#${paciente.id}).`}
+        description={`Escolha o tipo de exame para ${nomePaciente(paciente)} (#${paciente.id}).`}
         actions={
           <Button asChild variant="outline">
             <Link href={`${routes.exames}/${paciente.id}`}>
@@ -68,10 +68,10 @@ export default function SelecionarExamePage() {
 
       <Async
         query={templatesQuery}
-        loading={<LoadingState label="Carregando templates…" />}
+        loading={<LoadingState label="Modelos…" />}
         error={(refetch) => (
           <EmptyState
-            title="Erro ao carregar templates"
+            title="Erro ao carregar modelos"
             description="Não foi possível buscar os tipos de exame disponíveis."
             action={
               <Button variant="outline" onClick={refetch}>
@@ -83,7 +83,7 @@ export default function SelecionarExamePage() {
         isEmpty={(data) => data.length === 0}
         empty={() => (
           <EmptyState
-            title="Nenhum template disponível"
+            title="Nenhum modelo disponível"
             description="Não há tipos de exame cadastrados no sistema."
           />
         )}
@@ -136,7 +136,6 @@ function TemplateCard({
         <h3 className="mt-4 text-lg font-semibold">{template.name}</h3>
         <p className="mt-1 text-sm text-white/85">
           {fieldCount} {fieldCount === 1 ? "campo" : "campos"}
-          {template.version > 1 ? ` · v${template.version}` : ""}
         </p>
       </div>
     </Link>

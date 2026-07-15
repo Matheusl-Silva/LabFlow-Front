@@ -15,10 +15,11 @@ const KEYS = {
   detail: (id: number | string) => [...KEYS.all, "detail", String(id)] as const,
 };
 
-export function useUsuariosQuery(): UseQueryResult<Usuario[], Error> {
+export function useUsuariosQuery(enabled = true): UseQueryResult<Usuario[], Error> {
   return useQuery({
     queryKey: KEYS.list(),
     queryFn: () => usuarioService.listar(),
+    enabled,
   });
 }
 

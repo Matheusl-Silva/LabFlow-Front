@@ -33,6 +33,20 @@ export default function EditarUsuarioPage() {
 
   const [confirmOpen, setConfirmOpen] = useState(false);
 
+  if (!session?.user.admin) {
+    return (
+      <EmptyState
+        title="Acesso restrito"
+        description="Somente administradores podem gerenciar usuários."
+        action={
+          <Button asChild variant="outline">
+            <Link href={routes.dashboard}>Voltar ao início</Link>
+          </Button>
+        }
+      />
+    );
+  }
+
   if (isLoading) return <LoadingState label="Carregando usuário…" />;
 
   if (isError || !usuario) {

@@ -47,14 +47,17 @@ export function PacienteForm({
     formState: { errors, isSubmitting },
   } = useForm<PacienteFormInput, undefined, PacienteFormOutput>({
     resolver: zodResolver(pacienteSchema),
+    // O formulário só é montado a partir de GET /patient/:id, que devolve o
+    // paciente completo — mas os campos são anuláveis no tipo por causa da
+    // listagem anonimizada, então normalizamos aqui.
     defaultValues: initial
       ? {
-          nome: initial.nome,
-          email: initial.email,
-          periodo: initial.periodo,
-          dataNascimento: initial.dataNascimento,
-          telefone: initial.telefone,
-          cpf: initial.cpf,
+          nome: initial.nome ?? "",
+          email: initial.email ?? "",
+          periodo: initial.periodo ?? undefined,
+          dataNascimento: initial.dataNascimento ?? "",
+          telefone: initial.telefone ?? "",
+          cpf: initial.cpf ?? "",
           medicamento: initial.medicamento ?? "",
           patologia: initial.patologia ?? "",
         }

@@ -7,27 +7,50 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useAuth } from "@/providers/AuthProvider";
 import { usePacientesQuery } from "@/hooks/usePacientes";
 import { useUsuariosQuery } from "@/hooks/useUsuarios";
+import { useExamsCountQuery } from "@/hooks/useExam";
 import { routes } from "@/constants/routes";
 
 export default function DashboardPage() {
   const { session } = useAuth();
-  const { data: pacientes, isLoading: loadingPacientes } = usePacientesQuery();
-  const { data: usuarios, isLoading: loadingUsuarios } = useUsuariosQuery();
+  const isAdmin = !!session?.user.admin;
 
-  const kpis = [
+  const { data: pacientes, isLoading: loadingPacientes } = usePacientesQuery();
+  // GET /exam é admin-only: o usuário comum não tem como contar exames, então o
+  // card dele vira só um atalho, sem número.
+  const { data: totalExames, isLoading: loadingExames } = useExamsCountQuery(isAdmin);
+  // Usuário comum não enxerga os demais usuários — nem sequer buscamos a lista.
+  const { data: usuarios, isLoading: loadingUsuarios } = useUsuariosQuery(isAdmin);
+
+  const kpis: {
+    label: string;
+    value?: string;
+    hint?: string;
+    href: string;
+    icon: typeof Users;
+  }[] = [
     {
       label: "Pacientes",
       value: loadingPacientes ? "…" : (pacientes?.length ?? 0).toString(),
       href: routes.pacientes,
       icon: Users,
     },
-    { label: "Exames", value: "—", href: routes.exames, icon: FlaskConical },
     {
-      label: "Usuários",
-      value: loadingUsuarios ? "…" : (usuarios?.length ?? 0).toString(),
-      href: routes.usuarios,
-      icon: UserCog,
+      label: "Exames",
+      value: isAdmin ? (loadingExames ? "…" : (totalExames ?? 0).toString()) : undefined,
+      hint: isAdmin ? undefined : "Registrar e consultar",
+      href: routes.exames,
+      icon: FlaskConical,
     },
+    ...(isAdmin
+      ? [
+          {
+            label: "Usuários",
+            value: loadingUsuarios ? "…" : (usuarios?.length ?? 0).toString(),
+            href: routes.usuarios,
+            icon: UserCog,
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -38,7 +61,7 @@ export default function DashboardPage() {
       />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {kpis.map(({ label, value, href, icon: Icon }) => (
+        {kpis.map(({ label, value, hint, href, icon: Icon }) => (
           <Link key={label} href={href} className="group">
             <Card className="transition-shadow group-hover:shadow-md">
               <CardHeader className="flex-row items-center justify-between space-y-0 pb-2">
@@ -49,7 +72,11 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="flex items-baseline justify-between">
-                  <span className="text-3xl font-semibold text-slate-900">{value}</span>
+                  {value !== undefined ? (
+                    <span className="text-3xl font-semibold text-slate-900">{value}</span>
+                  ) : (
+                    <span className="text-sm text-slate-600">{hint}</span>
+                  )}
                   <span className="inline-flex items-center gap-1 text-xs text-brand-700 group-hover:underline">
                     Acessar <ArrowRight className="h-3 w-3" />
                   </span>
@@ -62,18 +89,33 @@ export default function DashboardPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Próximos passos</CardTitle>
-          <CardDescription>Fluxos disponíveis nesta fase.</CardDescription>
+          <CardTitle>Como funciona</CardTitle>
+          <CardDescription>Os formulários de exame são montados a partir dos modelos.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-2 text-sm text-slate-600">
+          {isAdmin && (
+            <p>
+              1. Defina os campos de cada exame em{" "}
+              <Link href={routes.modelos} className="font-medium text-brand-700 hover:underline">
+                Modelos de exame
+              </Link>
+              . Cada modelo vira um formulário.
+            </p>
+          )}
           <p>
-            • Comece cadastrando pacientes em{" "}
+            {isAdmin ? "2." : "1."} Cadastre o paciente em{" "}
             <Link href={routes.pacientes} className="font-medium text-brand-700 hover:underline">
               Pacientes
             </Link>
             .
           </p>
-          <p>• Telas de Exames e Usuários entram nas próximas fases.</p>
+          <p>
+            {isAdmin ? "3." : "2."} Registre o resultado em{" "}
+            <Link href={routes.exames} className="font-medium text-brand-700 hover:underline">
+              Exames
+            </Link>
+            , escolhendo o modelo desejado.
+          </p>
         </CardContent>
       </Card>
     </div>

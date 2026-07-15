@@ -12,8 +12,13 @@ export const endpoints = {
     byId: (id: number | string) => `/patient/${id}`,
   },
   templates: {
+    /** Somente os templates ativos — é o que alimenta a criação de exames. */
     base: "/template",
+    /** Inclui as versões já desativadas. Admin. */
+    all: "/template/all",
     byId: (id: number | string) => `/template/${id}`,
+    /** Desativa a versão atual e cria a próxima com o novo schema. */
+    newVersion: (id: number | string) => `/template/update/${id}`,
   },
   exam: {
     base: "/exam",

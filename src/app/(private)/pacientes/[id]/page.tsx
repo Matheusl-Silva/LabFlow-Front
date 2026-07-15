@@ -17,19 +17,37 @@ import {
   usePacienteQuery,
   useUpdatePaciente,
 } from "@/hooks/usePacientes";
+import { useAuth } from "@/providers/AuthProvider";
 import { isApiError } from "@/lib/http/errors";
 import { routes } from "@/constants/routes";
+import { nomePaciente } from "@/types";
 
 export default function EditarPacientePage() {
   const router = useRouter();
   const params = useParams<{ id: string }>();
   const id = params?.id;
+  const { session } = useAuth();
 
   const { data: paciente, isLoading, isError } = usePacienteQuery(id);
   const updateMutation = useUpdatePaciente(id!);
   const deleteMutation = useDeletePaciente();
 
   const [confirmOpen, setConfirmOpen] = useState(false);
+
+  // Editar exige ler os dados pessoais — restrito a admin, tanto aqui quanto na API.
+  if (!session?.user.admin) {
+    return (
+      <EmptyState
+        title="Acesso restrito"
+        description="Somente administradores podem ver e editar os dados pessoais dos pacientes."
+        action={
+          <Button asChild variant="outline">
+            <Link href={routes.pacientes}>Voltar para a lista</Link>
+          </Button>
+        }
+      />
+    );
+  }
 
   if (isLoading) return <LoadingState label="Carregando paciente…" />;
 
@@ -50,7 +68,7 @@ export default function EditarPacientePage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title={paciente.nome}
+        title={nomePaciente(paciente)}
         description={`Editando paciente #${paciente.id}.`}
         actions={
           <div className="flex gap-2">
@@ -96,7 +114,7 @@ export default function EditarPacientePage() {
         open={confirmOpen}
         onOpenChange={setConfirmOpen}
         title="Excluir paciente"
-        description={`Tem certeza que deseja excluir "${paciente.nome}"? Esta ação não pode ser desfeita.`}
+        description={`Tem certeza que deseja excluir ${nomePaciente(paciente)}? Esta ação não pode ser desfeita.`}
         confirmLabel="Excluir"
         destructive
         loading={deleteMutation.isPending}
