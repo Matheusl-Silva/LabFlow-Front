@@ -25,4 +25,9 @@ export const endpoints = {
     byId: (id: number | string) => `/exam/${id}`,
     byPatient: (patientId: number | string) => `/exam/patient/${patientId}`,
   },
+  anamnese: {
+    base: "/anamnesis",
+    byId: (id: number | string) => `/anamnesis/${id}`,
+    byPatient: (patientId: number | string) => `/anamnesis/patient/${patientId}`,
+  },
 } as const;

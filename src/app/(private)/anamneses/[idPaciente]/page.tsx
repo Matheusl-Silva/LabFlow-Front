@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ArrowLeft, ClipboardList, ClipboardX, Plus } from "lucide-react";
+import { ArrowLeft, ClipboardX, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -13,26 +13,31 @@ import { EmptyState } from "@/components/feedback/EmptyState";
 import { LoadingState } from "@/components/feedback/LoadingState";
 import { TableSkeleton } from "@/components/tables/TableSkeleton";
 import { ConfirmDialog } from "@/components/modals/ConfirmDialog";
-import { useAuth } from "@/providers/AuthProvider";
+import { RequireAdmin } from "@/components/feedback/RequireAdmin";
 import { usePacienteQuery } from "@/hooks/usePacientes";
-import { useDeleteExam, useExamsByPatientQuery } from "@/hooks/useExam";
+import { useAnamnesesByPatientQuery, useDeleteAnamnese } from "@/hooks/useAnamnese";
 import { isApiError } from "@/lib/http/errors";
 import { routes } from "@/constants/routes";
-import { nomePaciente, type ExamListItem } from "@/types";
+import { nomePaciente, type Anamnese } from "@/types";
+import { AnamnesesTable } from "@/features/anamneses/components/AnamnesesTable";
 
-import { HistoricoExamesTable } from "@/features/exames/components/HistoricoExamesTable";
+export default function AnamnesesDoPacientePage() {
+  return (
+    <RequireAdmin>
+      <Conteudo />
+    </RequireAdmin>
+  );
+}
 
-export default function HistoricoExamesPage() {
+function Conteudo() {
   const params = useParams<{ idPaciente: string }>();
   const id = params?.idPaciente;
-  const { session } = useAuth();
-  const isAdmin = !!session?.user.admin;
 
   const pacienteQuery = usePacienteQuery(id);
-  const examesQuery = useExamsByPatientQuery(id);
-  const deleteMutation = useDeleteExam(id!);
+  const anamnesesQuery = useAnamnesesByPatientQuery(id);
+  const deleteMutation = useDeleteAnamnese(id!);
 
-  const [toDelete, setToDelete] = useState<ExamListItem | null>(null);
+  const [toDelete, setToDelete] = useState<Anamnese | null>(null);
 
   if (pacienteQuery.isLoading) return <LoadingState label="Carregando paciente…" />;
 
@@ -43,7 +48,7 @@ export default function HistoricoExamesPage() {
         description={`O paciente nº ${id} não existe ou foi removido.`}
         action={
           <Button asChild variant="outline">
-            <Link href={routes.exames}>
+            <Link href={routes.anamneses}>
               <ArrowLeft className="h-4 w-4" />
               Voltar
             </Link>
@@ -59,38 +64,30 @@ export default function HistoricoExamesPage() {
     if (!toDelete) return;
     try {
       await deleteMutation.mutateAsync(toDelete.id);
-      toast.success(`Exame #${toDelete.id} excluído.`);
+      toast.success(`Anamnese #${toDelete.id} excluída.`);
       setToDelete(null);
     } catch (err) {
-      toast.error(isApiError(err) ? err.message : "Falha ao excluir exame.");
+      toast.error(isApiError(err) ? err.message : "Falha ao excluir anamnese.");
     }
   }
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title={`Exames de ${nomePaciente(paciente)}`}
-        description={`Paciente nº ${paciente.id}${paciente.email ? ` · ${paciente.email}` : ""}`}
+        title={`Anamneses de ${nomePaciente(paciente)}`}
+        description={`Paciente nº ${paciente.id}`}
         actions={
           <div className="flex gap-2">
             <Button asChild variant="outline">
-              <Link href={routes.exames}>
+              <Link href={routes.anamneses}>
                 <ArrowLeft className="h-4 w-4" />
                 Voltar
               </Link>
             </Button>
-            {isAdmin && (
-              <Button asChild variant="outline">
-                <Link href={`${routes.anamneses}/${paciente.id}`}>
-                  <ClipboardList className="h-4 w-4" />
-                  Anamneses
-                </Link>
-              </Button>
-            )}
             <Button asChild>
-              <Link href={`${routes.exames}/${paciente.id}/selecionar`}>
+              <Link href={`${routes.anamneses}/${paciente.id}/nova`}>
                 <Plus className="h-4 w-4" />
-                Incluir exame
+                Nova anamnese
               </Link>
             </Button>
           </div>
@@ -100,10 +97,10 @@ export default function HistoricoExamesPage() {
       <Card>
         <CardContent className="p-0">
           <Async
-            query={examesQuery}
+            query={anamnesesQuery}
             loading={
               <div className="p-4">
-                <TableSkeleton rows={4} columns={5} />
+                <TableSkeleton rows={3} columns={4} />
               </div>
             }
             error={(refetch) => (
@@ -119,22 +116,21 @@ export default function HistoricoExamesPage() {
               />
             )}
           >
-            {(exames) => (
-              <HistoricoExamesTable
+            {(anamneses) => (
+              <AnamnesesTable
                 idPaciente={paciente.id}
-                exames={exames}
-                isAdmin={isAdmin}
+                anamneses={anamneses}
                 onDelete={setToDelete}
                 empty={
                   <EmptyState
                     icon={<ClipboardX className="h-5 w-5" />}
-                    title="Nenhum exame registrado"
-                    description="Clique em “Incluir exame” para registrar o primeiro."
+                    title="Nenhuma anamnese registrada"
+                    description="Clique em “Nova anamnese” para registrar a primeira."
                     action={
                       <Button asChild>
-                        <Link href={`${routes.exames}/${paciente.id}/selecionar`}>
+                        <Link href={`${routes.anamneses}/${paciente.id}/nova`}>
                           <Plus className="h-4 w-4" />
-                          Incluir exame
+                          Nova anamnese
                         </Link>
                       </Button>
                     }
@@ -149,10 +145,10 @@ export default function HistoricoExamesPage() {
       <ConfirmDialog
         open={!!toDelete}
         onOpenChange={(open) => !open && setToDelete(null)}
-        title="Excluir exame"
+        title="Excluir anamnese"
         description={
           toDelete
-            ? `Excluir o exame #${toDelete.id} (${toDelete.templateName ?? "sem template"})? Esta ação não pode ser desfeita.`
+            ? `Excluir a anamnese #${toDelete.id}? Esta ação não pode ser desfeita.`
             : undefined
         }
         confirmLabel="Excluir"

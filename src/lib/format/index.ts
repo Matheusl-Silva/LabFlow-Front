@@ -20,6 +20,37 @@ export function formatDate(iso: string | null | undefined): string {
   return new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC" }).format(date);
 }
 
+/**
+ * Data + hora em horário LOCAL. Diferente de `formatDate`, que fixa UTC para
+ * datas puras (nascimento). Anamnese guarda timestamps reais (data e hora da
+ * coleta), então aqui o fuso do usuário é o correto.
+ */
+export function formatDateTime(iso: string | null | undefined): string {
+  if (!iso) return "—";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return iso;
+  return new Intl.DateTimeFormat("pt-BR", {
+    dateStyle: "short",
+    timeStyle: "short",
+  }).format(date);
+}
+
+/**
+ * ISO (UTC) → valor aceito por `<input type="datetime-local">`
+ * (`YYYY-MM-DDTHH:mm`), já no horário local. Usado ao editar uma anamnese: o
+ * input não aceita o sufixo `Z`/milissegundos que a API devolve.
+ */
+export function toDatetimeLocalValue(iso: string | null | undefined): string {
+  if (!iso) return "";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return (
+    `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}` +
+    `T${pad(date.getHours())}:${pad(date.getMinutes())}`
+  );
+}
+
 export function maskCpf(value: string): string {
   const digits = value.replace(/\D/g, "").slice(0, 11);
   return digits
