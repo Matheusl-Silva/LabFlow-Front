@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-e-smoke:
+    name: Typecheck, build e smoke test
+    runs-on: ubuntu-latest
+
+    env:
+      NEXT_PUBLIC_API_URL: http://localhost:3000
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build de produção
+        run: npm run build
+
+      - name: Subir e validar a aplicação
+        run: |
+          npm run start > app.log 2>&1 &
+          echo $! > app.pid
+
+          # Espera o next start responder na porta 3001
+          for i in $(seq 1 30); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3001/ || true)
+            if [ "$code" = "200" ]; then
+              echo "Aplicação de pé (tentativa $i)."
+              break
+            fi
+            if [ "$i" = "30" ]; then
+              echo "::error::Aplicação não subiu em 30s"
+              cat app.log
+              exit 1
+            fi
+            sleep 1
+          done
+
+          # Páginas principais respondem
+          for path in / /login /cadastro; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' "http://localhost:3001$path")
+            if [ "$code" != "200" ]; then
+              echo "::error::Rota $path deveria retornar 200, retornou $code"
+              cat app.log; exit 1
+            fi
+            echo "OK: $path (200)"
+          done
+
+          # Headers de segurança do next.config.mjs estão sendo servidos
+          headers=$(curl -sI http://localhost:3001/)
+          for h in "X-Frame-Options" "X-Content-Type-Options" "Referrer-Policy" "Strict-Transport-Security"; do
+            echo "$headers" | grep -qi "$h" || {
+              echo "::error::Header de segurança ausente: $h"
+              exit 1
+            }
+            echo "OK: header $h presente"
+          done
+
+      - name: Logs da aplicação (em caso de falha)
+        if: failure()
+        run: cat app.log || true
+
+      - name: Encerrar aplicação
+        if: always()
+        run: kill "$(cat app.pid)" 2>/dev/null || true
