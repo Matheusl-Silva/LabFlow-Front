@@ -5,11 +5,18 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 
 export type TipoFilter = "" | "admin" | "comum";
+export type StatusFilter = "" | "ativo" | "pendente";
 
-const FILTERS: { value: TipoFilter; label: string }[] = [
+const TIPO_FILTERS: { value: TipoFilter; label: string }[] = [
   { value: "", label: "Todos os tipos" },
   { value: "admin", label: "Administradores" },
   { value: "comum", label: "Usuários comuns" },
+];
+
+const STATUS_FILTERS: { value: StatusFilter; label: string }[] = [
+  { value: "", label: "Todos os status" },
+  { value: "ativo", label: "Ativos" },
+  { value: "pendente", label: "Pendentes" },
 ];
 
 interface UsuariosFiltersProps {
@@ -17,6 +24,8 @@ interface UsuariosFiltersProps {
   onSearchChange: (v: string) => void;
   tipo: TipoFilter;
   onTipoChange: (v: TipoFilter) => void;
+  status: StatusFilter;
+  onStatusChange: (v: StatusFilter) => void;
 }
 
 export function UsuariosFilters({
@@ -24,11 +33,13 @@ export function UsuariosFilters({
   onSearchChange,
   tipo,
   onTipoChange,
+  status,
+  onStatusChange,
 }: UsuariosFiltersProps) {
   return (
     <Card>
       <CardContent className="p-4">
-        <div className="grid gap-3 sm:grid-cols-[1fr,220px]">
+        <div className="grid gap-3 sm:grid-cols-[1fr,200px,200px]">
           <div className="relative">
             <Search
               aria-hidden
@@ -48,7 +59,19 @@ export function UsuariosFilters({
             className="h-10 rounded-md border border-slate-300 bg-white px-3 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
             aria-label="Filtrar por tipo"
           >
-            {FILTERS.map((f) => (
+            {TIPO_FILTERS.map((f) => (
+              <option key={f.value} value={f.value}>
+                {f.label}
+              </option>
+            ))}
+          </select>
+          <select
+            value={status}
+            onChange={(e) => onStatusChange(e.target.value as StatusFilter)}
+            className="h-10 rounded-md border border-slate-300 bg-white px-3 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+            aria-label="Filtrar por status"
+          >
+            {STATUS_FILTERS.map((f) => (
               <option key={f.value} value={f.value}>
                 {f.label}
               </option>

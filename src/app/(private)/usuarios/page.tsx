@@ -22,6 +22,7 @@ import type { Usuario } from "@/types";
 
 import {
   UsuariosFilters,
+  type StatusFilter,
   type TipoFilter,
 } from "@/features/usuarios/components/UsuariosFilters";
 import { UsuariosTable } from "@/features/usuarios/components/UsuariosTable";
@@ -37,9 +38,10 @@ export default function UsuariosPage() {
 
   const [search, setSearch] = useState("");
   const [tipo, setTipo] = useState<TipoFilter>("");
+  const [status, setStatus] = useState<StatusFilter>("");
   const [toDelete, setToDelete] = useState<Usuario | null>(null);
 
-  const filtrouAlgo = !!search || !!tipo;
+  const filtrouAlgo = !!search || !!tipo || !!status;
 
   if (!isAdmin) {
     return (
@@ -100,6 +102,8 @@ export default function UsuariosPage() {
         onSearchChange={setSearch}
         tipo={tipo}
         onTipoChange={setTipo}
+        status={status}
+        onStatusChange={setStatus}
       />
 
       <Async
@@ -120,7 +124,7 @@ export default function UsuariosPage() {
       >
         {(data) => (
           <UsuariosTable
-            usuarios={filterUsuarios(data, { search, tipo })}
+            usuarios={filterUsuarios(data, { search, tipo, status })}
             currentUserId={session?.user.id}
             onDelete={setToDelete}
             onApprove={handleApprove}

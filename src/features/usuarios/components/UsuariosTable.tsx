@@ -24,8 +24,11 @@ export function UsuariosTable({
   onApprove,
   approvingId,
 }: UsuariosTableProps) {
+  const usuariosOrdenados = [...usuarios].sort((a, b) =>
+    a.nome.localeCompare(b.nome, "pt-BR", { sensitivity: "base" })
+  );
+
   const columns: Column<Usuario>[] = [
-    { key: "id", header: "#", cell: (u) => <span className="font-mono text-xs">{u.id}</span> },
     {
       key: "nome",
       header: "Nome",
@@ -105,6 +108,6 @@ export function UsuariosTable({
   ];
 
   return (
-    <DataTable columns={columns} data={usuarios} rowKey={(u) => u.id} empty={empty} />
+    <DataTable columns={columns} data={usuariosOrdenados} rowKey={(u) => u.id} empty={empty} />
   );
 }
