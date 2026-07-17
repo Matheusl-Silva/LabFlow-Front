@@ -11,7 +11,11 @@ import { EmptyState } from "@/components/feedback/EmptyState";
 import { TableSkeleton } from "@/components/tables/TableSkeleton";
 import { ConfirmDialog } from "@/components/modals/ConfirmDialog";
 import { useAuth } from "@/providers/AuthProvider";
-import { useDeleteUsuario, useUsuariosQuery } from "@/hooks/useUsuarios";
+import {
+  useDeleteUsuario,
+  useSetUsuarioAtivo,
+  useUsuariosQuery,
+} from "@/hooks/useUsuarios";
 import { isApiError } from "@/lib/http/errors";
 import { routes } from "@/constants/routes";
 import type { Usuario } from "@/types";
@@ -29,6 +33,7 @@ export default function UsuariosPage() {
 
   const query = useUsuariosQuery(isAdmin);
   const deleteMutation = useDeleteUsuario();
+  const approveMutation = useSetUsuarioAtivo();
 
   const [search, setSearch] = useState("");
   const [tipo, setTipo] = useState<TipoFilter>("");
@@ -62,6 +67,15 @@ export default function UsuariosPage() {
     }
   }
 
+  async function handleApprove(usuario: Usuario) {
+    try {
+      await approveMutation.mutateAsync({ id: usuario.id, ativo: true });
+      toast.success(`Acesso de "${usuario.nome}" aprovado.`);
+    } catch (err) {
+      toast.error(isApiError(err) ? err.message : "Falha ao aprovar usuário.");
+    }
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -90,7 +104,7 @@ export default function UsuariosPage() {
 
       <Async
         query={query}
-        loading={<TableSkeleton rows={5} columns={5} />}
+        loading={<TableSkeleton rows={5} columns={6} />}
         error={(refetch) => (
           <EmptyState
             icon={<UserCog className="h-5 w-5" />}
@@ -109,6 +123,12 @@ export default function UsuariosPage() {
             usuarios={filterUsuarios(data, { search, tipo })}
             currentUserId={session?.user.id}
             onDelete={setToDelete}
+            onApprove={handleApprove}
+            approvingId={
+              approveMutation.isPending
+                ? (approveMutation.variables?.id as number)
+                : undefined
+            }
             empty={
               <EmptyState
                 icon={<UserCog className="h-5 w-5" />}

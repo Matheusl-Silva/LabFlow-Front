@@ -62,7 +62,9 @@ export default function CadastroPage() {
   async function onSubmit(values: RegisterInput) {
     try {
       await authService.register(values);
-      toast.success("Conta criada com sucesso!");
+      toast.success(
+        "Cadastro enviado! Aguarde a aprovação de um administrador para acessar.",
+      );
       router.replace(`${routes.login}?registered=true`);
     } catch (err) {
       const message = isApiError(err) ? err.message : "Falha ao criar conta.";
