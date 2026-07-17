@@ -8,14 +8,17 @@ interface UserApi {
   name: string;
   email: string;
   isAdmin: boolean;
+  isActive: boolean;
 }
 
 function toDomain(u: UserApi): Usuario {
-  return { id: u.id, nome: u.name, email: u.email, admin: u.isAdmin };
-}
-
-function decodeJwtSub(token: string): number {
-  return (JSON.parse(atob(token.split(".")[1])) as { sub: number }).sub;
+  return {
+    id: u.id,
+    nome: u.name,
+    email: u.email,
+    admin: u.isAdmin,
+    ativo: u.isActive,
+  };
 }
 
 export const httpUsuarioRepository: UsuarioRepository = {
@@ -30,16 +33,15 @@ export const httpUsuarioRepository: UsuarioRepository = {
   },
 
   async create(input) {
-    const { data } = await httpClient.post<{ token: string }>(endpoints.auth.register, {
+    // Criação por admin: endpoint dedicado que já cria o usuário ativo e define
+    // isAdmin numa única requisição (não passa pelo /auth/signup público).
+    const { data } = await httpClient.post<UserApi>(endpoints.usuarios.base, {
       name: input.nome,
       email: input.email,
       pass: input.senha,
+      isAdmin: input.admin,
     });
-    const newId = decodeJwtSub(data.token);
-    if (input.admin) {
-      await httpClient.put(endpoints.usuarios.byId(newId), { isAdmin: true });
-    }
-    return newId;
+    return data.id;
   },
 
   async update(id, input) {
@@ -50,6 +52,10 @@ export const httpUsuarioRepository: UsuarioRepository = {
     };
     if (input.senha) body.pass = input.senha;
     await httpClient.put(endpoints.usuarios.byId(id), body);
+  },
+
+  async setAtivo(id, ativo) {
+    await httpClient.put(endpoints.usuarios.byId(id), { isActive: ativo });
   },
 
   async remove(id) {

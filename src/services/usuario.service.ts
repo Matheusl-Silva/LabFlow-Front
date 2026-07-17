@@ -7,5 +7,7 @@ export const usuarioService = {
   criar: (input: UsuarioInput): Promise<number> => usuarioRepository.create(input),
   atualizar: (id: number | string, input: UsuarioInput): Promise<void> =>
     usuarioRepository.update(id, input),
+  definirAtivo: (id: number | string, ativo: boolean): Promise<void> =>
+    usuarioRepository.setAtivo(id, ativo),
   remover: (id: number | string): Promise<void> => usuarioRepository.remove(id),
 };

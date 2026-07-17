@@ -3,6 +3,8 @@ export interface Usuario {
   nome: string;
   email: string;
   admin: boolean;
+  /** Conta aprovada por um admin. Contas em auto-cadastro nascem `false`. */
+  ativo: boolean;
   perfil?: string;
 }
 

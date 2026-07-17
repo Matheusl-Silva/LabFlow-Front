@@ -52,6 +52,18 @@ export function useUpdateUsuario(id: number | string) {
   });
 }
 
+export function useSetUsuarioAtivo() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ativo }: { id: number | string; ativo: boolean }) =>
+      usuarioService.definirAtivo(id, ativo),
+    onSuccess: (_data, { id }) => {
+      qc.invalidateQueries({ queryKey: KEYS.list() });
+      qc.invalidateQueries({ queryKey: KEYS.detail(id) });
+    },
+  });
+}
+
 export function useDeleteUsuario() {
   const qc = useQueryClient();
   return useMutation({

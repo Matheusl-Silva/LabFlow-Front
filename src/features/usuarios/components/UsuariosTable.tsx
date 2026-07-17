@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Pencil, Trash2 } from "lucide-react";
+import { Check, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DataTable, type Column } from "@/components/tables/DataTable";
 import { routes } from "@/constants/routes";
@@ -12,6 +12,8 @@ interface UsuariosTableProps {
   empty: React.ReactNode;
   currentUserId?: number;
   onDelete: (usuario: Usuario) => void;
+  onApprove: (usuario: Usuario) => void;
+  approvingId?: number;
 }
 
 export function UsuariosTable({
@@ -19,6 +21,8 @@ export function UsuariosTable({
   empty,
   currentUserId,
   onDelete,
+  onApprove,
+  approvingId,
 }: UsuariosTableProps) {
   const columns: Column<Usuario>[] = [
     { key: "id", header: "#", cell: (u) => <span className="font-mono text-xs">{u.id}</span> },
@@ -43,6 +47,20 @@ export function UsuariosTable({
         ),
     },
     {
+      key: "status",
+      header: "Status",
+      cell: (u) =>
+        u.ativo ? (
+          <span className="inline-flex rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-800">
+            Ativo
+          </span>
+        ) : (
+          <span className="inline-flex rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800">
+            Pendente
+          </span>
+        ),
+    },
+    {
       key: "acoes",
       header: <span className="sr-only">Ações</span>,
       headerClassName: "text-right",
@@ -51,6 +69,19 @@ export function UsuariosTable({
         const isSelf = currentUserId === u.id;
         return (
           <div className="flex justify-end gap-1">
+            {!u.ativo && (
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={`Aprovar ${u.nome}`}
+                title="Aprovar acesso"
+                onClick={() => onApprove(u)}
+                disabled={approvingId === u.id}
+                className="text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700"
+              >
+                <Check className="h-4 w-4" />
+              </Button>
+            )}
             <Button asChild variant="ghost" size="icon" aria-label={`Editar ${u.nome}`}>
               <Link href={`${routes.usuarios}/${u.id}`}>
                 <Pencil className="h-4 w-4" />
