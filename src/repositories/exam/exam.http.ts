@@ -1,6 +1,12 @@
 import { httpClient } from "@/lib/http/client";
 import { endpoints } from "@/lib/http/endpoints";
-import type { ExamData, ExamDetail, ExamInput, ExamListItem } from "@/types";
+import type {
+  ExamData,
+  ExamDetail,
+  ExamInput,
+  ExamListItem,
+  ExamUpdateInput,
+} from "@/types";
 import type { ExamTemplateSchema } from "@/types";
 import type { ExamRepository } from "./exam.repository";
 
@@ -78,6 +84,10 @@ export const httpExamRepository: ExamRepository = {
   async create(input: ExamInput) {
     const { data } = await httpClient.post<{ id: number }>(endpoints.exam.base, input);
     return { id: data.id };
+  },
+
+  async update(id, input: ExamUpdateInput) {
+    await httpClient.put(endpoints.exam.byId(id), input);
   },
 
   async delete(id) {

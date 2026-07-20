@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Eye, Trash2 } from "lucide-react";
+import { Eye, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DataTable, type Column } from "@/components/tables/DataTable";
 import { formatDate } from "@/lib/format";
@@ -67,6 +67,18 @@ export function HistoricoExamesTable({
               <Eye className="h-4 w-4" />
             </Link>
           </Button>
+          {isAdmin && (
+            <Button
+              asChild
+              variant="ghost"
+              size="icon"
+              aria-label={`Editar exame ${e.id}`}
+            >
+              <Link href={`${routes.exames}/${idPaciente}/${e.id}/editar`}>
+                <Pencil className="h-4 w-4" />
+              </Link>
+            </Button>
+          )}
           {isAdmin && (
             <Button
               variant="ghost"
