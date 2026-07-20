@@ -53,3 +53,15 @@ export interface ExamInput {
   preceptorId: number;
   responsibleId: number;
 }
+
+/**
+ * PUT /exam/:id — a API só aceita alterar estes campos (UpdateExamDto omite
+ * `patientId` e `examTemplateId`: paciente e modelo do exame são imutáveis).
+ * É admin-only, como a exclusão.
+ */
+export interface ExamUpdateInput {
+  date: string;
+  data: ExamData;
+  preceptorId: number;
+  responsibleId: number;
+}
