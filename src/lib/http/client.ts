@@ -11,7 +11,11 @@ export const httpClient: AxiosInstance = axios.create({
 });
 
 httpClient.interceptors.request.use((config) => {
-  if (typeof window !== "undefined") {
+  // Não sobrescreve um Authorization já definido na própria requisição: no
+  // login, o GET /user/:id envia o token recém-emitido explicitamente, e usar
+  // o token (possivelmente expirado) do localStorage aqui causava 401
+  // intermitente que "sumia" ao repetir a requisição.
+  if (typeof window !== "undefined" && !config.headers.Authorization) {
     const session = getStoredSession();
     if (session?.token) {
       config.headers.Authorization = `Bearer ${session.token}`;
