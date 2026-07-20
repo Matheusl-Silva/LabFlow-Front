@@ -6,6 +6,10 @@ interface LaudoImpressaoProps {
   exam: ExamDetail;
   templateName: string;
   paciente: Paciente;
+  /** Data URL da logo enviada pelo admin; sem ela, o cabeçalho fica sem imagem. */
+  logoUrl?: string | null;
+  /** Texto do rodapé (nome/endereço do laboratório); sem ele, não há rodapé. */
+  footerText?: string | null;
   className?: string;
 }
 
@@ -28,29 +32,19 @@ function formatValue(v: ExamValue): string {
 }
 
 /**
- * Marca da Universidade Positivo recriada em SVG — não há asset de logo no
- * projeto, então desenhamos a estrela + wordmark inline para o laudo ser
- * autossuficiente na impressão.
+ * Cabeçalho do laudo: mostra a logo enviada pelo admin (Configurações). Se
+ * nenhuma logo estiver cadastrada, não renderiza nada — não há marca padrão.
  */
-function LogoPositivo() {
+function LogoLaudo({ logoUrl }: { logoUrl?: string | null }) {
+  if (!logoUrl) return null;
+
   return (
-    <div className="flex items-center gap-2">
-      <svg width="34" height="34" viewBox="0 0 100 100" aria-hidden="true">
-        <path
-          d="M50 4 61 38 96 38 68 59 79 93 50 72 21 93 32 59 4 38 39 38Z"
-          fill={AZUL}
-        />
-        <circle cx="50" cy="52" r="10" fill="#fff" />
-      </svg>
-      <div className="leading-none">
-        <div className="text-[11px] tracking-wide" style={{ color: AZUL }}>
-          Universidade
-        </div>
-        <div className="text-lg font-bold tracking-tight" style={{ color: AZUL }}>
-          POSITIVO
-        </div>
-      </div>
-    </div>
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={logoUrl}
+      alt="Logo do laboratório"
+      className="max-h-16 max-w-[240px] object-contain"
+    />
   );
 }
 
@@ -93,16 +87,19 @@ export function LaudoImpressao({
   exam,
   templateName,
   paciente,
+  logoUrl,
+  footerText,
   className,
 }: LaudoImpressaoProps) {
   const campos = Object.entries(exam.schema);
+  const rodape = footerText?.trim();
 
   return (
     <article
       className={`mx-auto max-w-3xl bg-white font-mono text-[12px] text-slate-900 ${className ?? ""}`}
     >
       {/* Cabeçalho institucional */}
-      <LogoPositivo />
+      <LogoLaudo logoUrl={logoUrl} />
       <div className="mt-3 h-[3px] w-full" style={{ backgroundColor: AZUL }} />
 
       {/* Identificação do paciente */}
@@ -158,14 +155,15 @@ export function LaudoImpressao({
         possui validade legal.
       </p>
 
-      {/* Rodapé LEAC */}
-      <div className="mt-4 h-[2px] w-full" style={{ backgroundColor: AZUL }} />
-      <div className="mt-2 text-center text-[10px] leading-tight text-slate-700">
-        <div>
-          LEAC – LABORATÓRIO DE ENSINO DE ANÁLISES CLÍNICAS. UNIVERSIDADE POSITIVO.
-        </div>
-        <div>RUA: JOÃO ROGÉRIO RIBEIRO BONESI, 150 – LONDRINA/ PR. CEP: 86047-625.</div>
-      </div>
+      {/* Rodapé configurável (nome/endereço do laboratório). Sem texto, some. */}
+      {rodape && (
+        <>
+          <div className="mt-4 h-[2px] w-full" style={{ backgroundColor: AZUL }} />
+          <div className="mt-2 whitespace-pre-line text-center text-[10px] leading-tight text-slate-700">
+            {rodape}
+          </div>
+        </>
+      )}
     </article>
   );
 }

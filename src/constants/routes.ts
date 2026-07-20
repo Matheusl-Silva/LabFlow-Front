@@ -11,6 +11,8 @@ export const routes = {
   modelos: "/modelos",
   /** Anamnese de enfermagem — admin-only. */
   anamneses: "/anamneses",
+  /** Configurações do laboratório (logo do laudo) — admin-only. */
+  configuracoes: "/configuracoes",
 } as const;
 
 export const PUBLIC_ROUTES: readonly string[] = [

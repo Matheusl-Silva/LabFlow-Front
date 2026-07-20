@@ -13,6 +13,8 @@ import { LaudoImpressao } from "@/components/shared/LaudoImpressao";
 import { usePacienteQuery } from "@/hooks/usePacientes";
 import { useExamQuery, useExamsByPatientQuery } from "@/hooks/useExam";
 import { useUsuariosQuery } from "@/hooks/useUsuarios";
+import { useSettingsQuery } from "@/hooks/useSettings";
+import { logoDataUrl } from "@/types";
 import { routes } from "@/constants/routes";
 
 export default function VisualizarExameDinamicoPage() {
@@ -30,6 +32,10 @@ export default function VisualizarExameDinamicoPage() {
   // Para o admin, GET /exam/:id traz os IDs de preceptor/responsável, não os
   // nomes; para o usuário comum, o contrário. Resolvemos o que faltar aqui.
   const { data: usuarios } = useUsuariosQuery();
+
+  // Logo e rodapé institucionais enviados pelo admin (Configurações). Sem eles,
+  // o laudo omite a imagem do cabeçalho e/ou o rodapé.
+  const { data: settings } = useSettingsQuery();
 
   const nomesPorId = useMemo(
     () => new Map((usuarios ?? []).map((u) => [u.id, u.nome])),
@@ -102,6 +108,8 @@ export default function VisualizarExameDinamicoPage() {
         exam={exam}
         templateName={templateName}
         paciente={paciente}
+        logoUrl={logoDataUrl(settings)}
+        footerText={settings?.footerText}
         className="hidden print:block"
       />
     </>
