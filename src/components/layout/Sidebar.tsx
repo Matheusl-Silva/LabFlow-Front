@@ -10,6 +10,7 @@ import {
   FileStack,
   FlaskConical,
   ClipboardList,
+  Settings,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -23,6 +24,7 @@ const nav = [
   { href: routes.anamneses, label: "Anamneses", icon: ClipboardList, adminOnly: true },
   { href: routes.modelos, label: "Modelos de exame", icon: FileStack, adminOnly: true },
   { href: routes.usuarios, label: "Usuários", icon: UserCog, adminOnly: true },
+  { href: routes.configuracoes, label: "Configurações", icon: Settings, adminOnly: true },
 ];
 
 interface SidebarProps {
@@ -49,7 +51,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
 
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-slate-200 bg-white transition-transform lg:static lg:translate-x-0",
+          "fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-slate-200 bg-white transition-transform print:hidden lg:static lg:translate-x-0",
           open ? "translate-x-0" : "-translate-x-full",
         )}
       >
