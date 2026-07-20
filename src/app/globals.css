@@ -14,13 +14,17 @@
 }
 
 @media print {
+  /* margin: 0 remove o cabeçalho/rodapé que o navegador injeta na margem da
+     página (data/hora, título do site, URL e contagem de páginas). O respiro
+     do papel volta como padding no próprio conteúdo impresso. */
   @page {
     size: A4;
-    margin: 14mm 12mm;
+    margin: 0;
   }
 
   body {
     background: #fff !important;
+    padding: 14mm 12mm;
   }
 
   .print\:hidden {
