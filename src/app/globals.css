@@ -30,4 +30,17 @@
   .print\:hidden {
     display: none !important;
   }
+
+  /* Os layouts de tela (AppShell etc.) usam `min-h-screen` (100vh). Na
+     impressão isso força cada container a ocupar uma página A4 inteira e,
+     somado ao padding do body, transborda para uma segunda página em branco.
+     Zeramos a altura mínima para o conteúdo fluir só o necessário. */
+  html,
+  body {
+    height: auto !important;
+  }
+
+  .min-h-screen {
+    min-height: 0 !important;
+  }
 }
