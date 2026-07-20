@@ -14,17 +14,18 @@
 }
 
 @media print {
-  /* margin: 0 remove o cabeçalho/rodapé que o navegador injeta na margem da
-     página (data/hora, título do site, URL e contagem de páginas). O respiro
-     do papel volta como padding no próprio conteúdo impresso. */
+  /* A margem da @page se repete a cada quebra de página, então é ela quem
+     garante a folga vertical em TODAS as páginas (inclusive o topo das
+     continuações num laudo longo). Antes o respiro vinha do padding do body,
+     que só aparece uma vez — sobrando no topo da 1ª e no fim da última, mas
+     colando o conteúdo na borda das páginas do meio. */
   @page {
     size: A4;
-    margin: 0;
+    margin: 15mm 12mm;
   }
 
   body {
     background: #fff !important;
-    padding: 14mm 12mm;
   }
 
   .print\:hidden {
