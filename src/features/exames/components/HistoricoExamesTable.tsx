@@ -23,12 +23,12 @@ export function HistoricoExamesTable({
   isAdmin,
   onDelete,
 }: HistoricoExamesTableProps) {
+  // Mais recentes primeiro. Cópia para não mutar o array recebido por prop.
+  const examesOrdenados = [...exames].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+  );
+
   const columns: Column<ExamListItem>[] = [
-    {
-      key: "id",
-      header: "#",
-      cell: (e) => <span className="font-mono text-xs">{e.id}</span>,
-    },
     {
       key: "date",
       header: "Data",
@@ -86,7 +86,7 @@ export function HistoricoExamesTable({
   return (
     <DataTable
       columns={columns}
-      data={exames}
+      data={examesOrdenados}
       rowKey={(e) => String(e.id)}
       empty={empty}
     />

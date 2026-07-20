@@ -115,10 +115,15 @@ export function PacientesTable({
     },
   ];
 
+  // Ordem alfabética pelo nome. Cópia para não mutar o array recebido por prop.
+  const pacientesOrdenados = [...pacientes].sort((a, b) =>
+    nomePaciente(a).localeCompare(nomePaciente(b), "pt-BR", { sensitivity: "base" }),
+  );
+
   return (
     <DataTable
       columns={isAdmin ? adminColumns : commonColumns}
-      data={pacientes}
+      data={pacientesOrdenados}
       rowKey={(p) => p.id}
       empty={empty}
     />
