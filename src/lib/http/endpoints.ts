@@ -30,4 +30,12 @@ export const endpoints = {
     byId: (id: number | string) => `/anamnesis/${id}`,
     byPatient: (patientId: number | string) => `/anamnesis/patient/${patientId}`,
   },
+  settings: {
+    /** Configurações do laudo (logo + rodapé). GET: qualquer usuário. */
+    base: "/settings",
+    /** Logo institucional. PUT/DELETE: admin. */
+    logo: "/settings/logo",
+    /** Texto do rodapé. PUT/DELETE: admin. */
+    footer: "/settings/footer",
+  },
 } as const;
