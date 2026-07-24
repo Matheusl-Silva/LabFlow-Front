@@ -3,13 +3,14 @@
 import { useMemo } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ArrowLeft, Printer } from "lucide-react";
+import { ArrowLeft, Pencil, Printer } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { LoadingState } from "@/components/feedback/LoadingState";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { DynamicLaudo } from "@/components/shared/DynamicLaudo";
 import { LaudoImpressao } from "@/components/shared/LaudoImpressao";
+import { useAuth } from "@/providers/AuthProvider";
 import { usePacienteQuery } from "@/hooks/usePacientes";
 import { useExamQuery, useExamsByPatientQuery } from "@/hooks/useExam";
 import { useUsuariosQuery } from "@/hooks/useUsuarios";
@@ -21,6 +22,9 @@ export default function VisualizarExameDinamicoPage() {
   const params = useParams<{ idPaciente: string; examId: string }>();
   const idPaciente = params?.idPaciente;
   const examId = params?.examId;
+
+  const { session } = useAuth();
+  const isAdmin = !!session?.user.admin;
 
   const { data: paciente, isLoading: loadingPac } = usePacienteQuery(idPaciente);
   const { data: exam, isLoading: loadingExam, isError: examError } = useExamQuery(examId);
@@ -86,6 +90,14 @@ export default function VisualizarExameDinamicoPage() {
                   Voltar
                 </Link>
               </Button>
+              {isAdmin && (
+                <Button asChild variant="outline">
+                  <Link href={`${routes.exames}/${idPaciente}/${exam.id}/editar`}>
+                    <Pencil className="h-4 w-4" />
+                    Editar
+                  </Link>
+                </Button>
+              )}
               <Button variant="outline" onClick={() => window.print()}>
                 <Printer className="h-4 w-4" />
                 Imprimir / Salvar PDF

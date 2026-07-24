@@ -7,7 +7,7 @@ import {
   type UseQueryResult,
 } from "@tanstack/react-query";
 import { examService } from "@/services/exam.service";
-import type { ExamDetail, ExamInput, ExamListItem } from "@/types";
+import type { ExamDetail, ExamInput, ExamListItem, ExamUpdateInput } from "@/types";
 
 const KEYS = {
   count: ["exams", "count"] as const,
@@ -50,6 +50,18 @@ export function useCreateExam(patientId: number | string) {
   return useMutation({
     mutationFn: (input: ExamInput) => examService.criar(input),
     onSuccess: () => qc.invalidateQueries({ queryKey: KEYS.patientList(patientId) }),
+  });
+}
+
+export function useUpdateExam(patientId: number | string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, input }: { id: number | string; input: ExamUpdateInput }) =>
+      examService.atualizar(id, input),
+    onSuccess: (_data, { id }) => {
+      qc.invalidateQueries({ queryKey: KEYS.patientList(patientId) });
+      qc.invalidateQueries({ queryKey: KEYS.detail(id) });
+    },
   });
 }
 
