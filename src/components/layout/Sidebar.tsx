@@ -10,6 +10,7 @@ import {
   FileStack,
   FlaskConical,
   ClipboardList,
+  History,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -23,6 +24,7 @@ const nav = [
   { href: routes.anamneses, label: "Anamneses", icon: ClipboardList, adminOnly: true },
   { href: routes.modelos, label: "Modelos de exame", icon: FileStack, adminOnly: true },
   { href: routes.usuarios, label: "Usuários", icon: UserCog, adminOnly: true },
+  { href: routes.logs, label: "Logs", icon: History, adminOnly: true },
 ];
 
 interface SidebarProps {

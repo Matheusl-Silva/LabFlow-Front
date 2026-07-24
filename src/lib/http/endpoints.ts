@@ -30,4 +30,8 @@ export const endpoints = {
     byId: (id: number | string) => `/anamnesis/${id}`,
     byPatient: (patientId: number | string) => `/anamnesis/patient/${patientId}`,
   },
+  auditoria: {
+    /** Lista de logs de auditoria. Admin-only no backend. */
+    base: "/audit-log",
+  },
 } as const;
