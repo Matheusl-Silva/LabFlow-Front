@@ -34,4 +34,12 @@ export const endpoints = {
     /** Lista de logs de auditoria. Admin-only no backend. */
     base: "/audit-log",
   },
+  settings: {
+    /** Configurações do laudo (logo + rodapé). GET: qualquer usuário. */
+    base: "/settings",
+    /** Logo institucional. PUT/DELETE: admin. */
+    logo: "/settings/logo",
+    /** Texto do rodapé. PUT/DELETE: admin. */
+    footer: "/settings/footer",
+  },
 } as const;

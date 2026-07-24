@@ -1,5 +1,5 @@
 import { examRepository } from "@/repositories/exam.repository";
-import type { ExamDetail, ExamInput, ExamListItem } from "@/types";
+import type { ExamDetail, ExamInput, ExamListItem, ExamUpdateInput } from "@/types";
 
 export const examService = {
   contarTodos: (): Promise<number> => examRepository.countAll(),
@@ -7,5 +7,7 @@ export const examService = {
   listarPorPaciente: (patientId: number | string): Promise<ExamListItem[]> =>
     examRepository.findByPatient(patientId),
   criar: (input: ExamInput): Promise<{ id: number }> => examRepository.create(input),
+  atualizar: (id: number | string, input: ExamUpdateInput): Promise<void> =>
+    examRepository.update(id, input),
   remover: (id: number | string): Promise<void> => examRepository.delete(id),
 };

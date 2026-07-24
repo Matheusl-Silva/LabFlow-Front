@@ -14,9 +14,14 @@
 }
 
 @media print {
+  /* A margem da @page se repete a cada quebra de página, então é ela quem
+     garante a folga vertical em TODAS as páginas (inclusive o topo das
+     continuações num laudo longo). Antes o respiro vinha do padding do body,
+     que só aparece uma vez — sobrando no topo da 1ª e no fim da última, mas
+     colando o conteúdo na borda das páginas do meio. */
   @page {
     size: A4;
-    margin: 14mm 12mm;
+    margin: 15mm 12mm;
   }
 
   body {
@@ -25,5 +30,18 @@
 
   .print\:hidden {
     display: none !important;
+  }
+
+  /* Os layouts de tela (AppShell etc.) usam `min-h-screen` (100vh). Na
+     impressão isso força cada container a ocupar uma página A4 inteira e,
+     somado ao padding do body, transborda para uma segunda página em branco.
+     Zeramos a altura mínima para o conteúdo fluir só o necessário. */
+  html,
+  body {
+    height: auto !important;
+  }
+
+  .min-h-screen {
+    min-height: 0 !important;
   }
 }

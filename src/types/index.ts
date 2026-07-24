@@ -4,3 +4,4 @@ export * from "./domain/exam-template";
 export * from "./domain/exam";
 export * from "./domain/anamnese";
 export * from "./domain/audit";
+export * from "./domain/settings";

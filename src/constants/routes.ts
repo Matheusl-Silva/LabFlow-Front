@@ -13,6 +13,8 @@ export const routes = {
   anamneses: "/anamneses",
   /** Auditoria: histórico de quem criou/editou/excluiu registros. Admin-only. */
   logs: "/logs",
+  /** Configurações do laboratório (logo do laudo) — admin-only. */
+  configuracoes: "/configuracoes",
 } as const;
 
 export const PUBLIC_ROUTES: readonly string[] = [
