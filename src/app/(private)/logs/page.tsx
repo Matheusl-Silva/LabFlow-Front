@@ -48,7 +48,7 @@ export default function LogsPage() {
     <RequireAdmin>
       <div className="space-y-6">
         <PageHeader
-          title="Logs de auditoria"
+          title="Registro de auditoria"
           description={
             query.data
               ? `${total} evento${total === 1 ? "" : "s"} registrado${total === 1 ? "" : "s"}.`

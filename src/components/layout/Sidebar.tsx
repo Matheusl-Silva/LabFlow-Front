@@ -25,7 +25,7 @@ const nav = [
   { href: routes.anamneses, label: "Anamneses", icon: ClipboardList, adminOnly: true },
   { href: routes.modelos, label: "Modelos de exame", icon: FileStack, adminOnly: true },
   { href: routes.usuarios, label: "Usuários", icon: UserCog, adminOnly: true },
-  { href: routes.logs, label: "Logs", icon: History, adminOnly: true },
+  { href: routes.logs, label: "Histórico", icon: History, adminOnly: true },
   { href: routes.configuracoes, label: "Configurações", icon: Settings, adminOnly: true },
 ];
 
