@@ -82,13 +82,12 @@ function ModeloDetalhe({ modelo }: { modelo: ExamTemplate }) {
    * Nos bastidores, a API não deixa mutar o schema de um modelo que já tem
    * exames gravados — isso invalidaria os laudos emitidos. Ela versiona:
    * desativa a versão atual e cria a seguinte, com um id novo. Traduzimos a
-   * intenção do usuário em até duas chamadas:
+   * intenção do usuário em UMA única chamada, para gerar um único log de
+   * auditoria ("modelo editado"):
    *
-   *   nome mudou     → PUT  /template/:id         (mesmo id, mesma versão)
-   *   campos mudaram → POST /template/update/:id  (versão nova, id NOVO)
-   *
-   * O nome vai primeiro de propósito: `createNewVersion` herda o nome do
-   * registro atual, então a nova versão já nasce com o nome novo.
+   *   campos mudaram → POST /template/update/:id  (versão nova; leva o nome
+   *                    novo junto quando também mudou, evitando um PUT extra)
+   *   só o nome mudou → PUT /template/:id          (mesmo id, mesma versão)
    */
   async function salvar({ name, schema }: { name: string; schema: ExamTemplateSchema }) {
     const nomeMudou = name !== modelo.name;
@@ -100,18 +99,19 @@ function ModeloDetalhe({ modelo }: { modelo: ExamTemplate }) {
     }
 
     try {
-      if (nomeMudou) {
-        await updateMutation.mutateAsync({ id: modelo.id, input: { name } });
-      }
-
       if (camposMudaram) {
-        const nova = await versionMutation.mutateAsync({ schema });
+        // Uma chamada só: a nova versão já nasce com o nome novo (quando mudou).
+        const nova = await versionMutation.mutateAsync(
+          nomeMudou ? { name, schema } : { schema },
+        );
         toast.success("Modelo atualizado.");
         // O id mudou: `replace` para o "voltar" do navegador não cair no id morto.
         router.replace(`${routes.modelos}/${nova.id}`);
         return;
       }
 
+      // Só o nome mudou: metadados, mesma versão.
+      await updateMutation.mutateAsync({ id: modelo.id, input: { name } });
       toast.success("Modelo atualizado.");
       router.push(routes.modelos);
     } catch (err) {

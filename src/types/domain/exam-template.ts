@@ -42,8 +42,13 @@ export interface ExamTemplateInput {
   schema: ExamTemplateSchema;
 }
 
-/** POST /template/update/:id — desativa a versão atual e cria a próxima. */
+/**
+ * POST /template/update/:id — desativa a versão atual e cria a próxima.
+ * `name` opcional: quando enviado, a nova versão já nasce com o nome novo,
+ * permitindo renomear e alterar os campos numa única chamada (um único log).
+ */
 export interface ExamTemplateNewVersionInput {
+  name?: string;
   schema: ExamTemplateSchema;
 }
 
