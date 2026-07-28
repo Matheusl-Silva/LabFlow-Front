@@ -11,6 +11,8 @@ export const routes = {
   modelos: "/modelos",
   /** Anamnese de enfermagem — admin-only. */
   anamneses: "/anamneses",
+  /** Auditoria: histórico de quem criou/editou/excluiu registros. Admin-only. */
+  logs: "/logs",
   /** Configurações do laboratório (logo do laudo) — admin-only. */
   configuracoes: "/configuracoes",
 } as const;

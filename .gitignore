@@ -24,7 +24,9 @@ next-env.d.ts
 *.tsbuildinfo
 
 # Logs
-logs
+# Ancorado na raiz: sem a barra, o padrão casaria com QUALQUER pasta chamada
+# "logs" — inclusive código-fonte (src/features/logs, rota /logs).
+/logs
 *.log
 npm-debug.log*
 yarn-debug.log*

@@ -58,7 +58,8 @@ export const httpExamTemplateRepository: ExamTemplateRepository = {
   async createNewVersion(id, input: ExamTemplateNewVersionInput) {
     const { data } = await httpClient.post<ExamTemplateApi>(
       endpoints.templates.newVersion(id),
-      { schema: input.schema },
+      // `name` só vai quando definido: renomear + trocar campos numa chamada só.
+      input.name ? { name: input.name, schema: input.schema } : { schema: input.schema },
     );
     return toDomain(data);
   },
