@@ -23,6 +23,16 @@ interface PatientApi {
 
 const digits = (v: string | null | undefined) => (v ? v.replace(/\D/g, "") : null);
 
+// A API guarda o telefone com DDI (+55), mas o formulário trabalha só com
+// DDD + número (10–11 dígitos). Um telefone BR local nunca passa de 11 dígitos,
+// então um valor com 12–13 dígitos começando em "55" só pode ser o DDI — que
+// removemos para o mask/validação do front funcionarem.
+const toLocalPhone = (v: string | null | undefined) => {
+  const d = digits(v);
+  if (!d) return null;
+  return d.length > 11 && d.startsWith("55") ? d.slice(2) : d;
+};
+
 function toPeriodo(period: string | null | undefined): Periodo | null {
   const normalized = period?.toLowerCase();
   return normalized === "matutino" || normalized === "noturno" ? normalized : null;
@@ -35,7 +45,7 @@ function toDomain(p: PatientApi): Paciente {
     email: p.email ?? null,
     periodo: toPeriodo(p.period),
     dataNascimento: p.birthDate ? String(p.birthDate).slice(0, 10) : null,
-    telefone: digits(p.phone),
+    telefone: toLocalPhone(p.phone),
     cpf: digits(p.cpf),
     medicamento: p.medication ?? null,
     patologia: p.pathology ?? null,
