@@ -1,5 +1,10 @@
 export type AuditAction = "CREATE" | "UPDATE" | "DELETE";
-export type AuditEntity = "exam" | "exam_template" | "patient" | "anamnesis";
+export type AuditEntity =
+  | "exam"
+  | "exam_template"
+  | "patient"
+  | "anamnesis"
+  | "stock_item";
 
 export interface AuditLog {
   id: number;

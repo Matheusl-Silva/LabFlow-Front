@@ -9,6 +9,8 @@ export const routes = {
   exames: "/exames",
   /** "Template" na API; para o usuário, é "modelo" (de exame). */
   modelos: "/modelos",
+  /** Estoque de insumos: leitura e movimentação para todos, cadastro só admin. */
+  estoque: "/estoque",
   /** Anamnese de enfermagem — admin-only. */
   anamneses: "/anamneses",
   /** Auditoria: histórico de quem criou/editou/excluiu registros. Admin-only. */

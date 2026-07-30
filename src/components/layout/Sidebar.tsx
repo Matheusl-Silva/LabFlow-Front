@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Activity,
+  Boxes,
   LayoutDashboard,
   Users,
   UserCog,
@@ -25,6 +26,7 @@ const nav = [
   { href: routes.exames, label: "Exames", icon: FlaskConical, adminOnly: false },
   { href: routes.modelos, label: "Modelos de exame", icon: FileStack, adminOnly: true },
   { href: routes.anamneses, label: "Anamneses", icon: ClipboardList, adminOnly: true },
+  { href: routes.estoque, label: "Estoque", icon: Boxes, adminOnly: false },
   { href: routes.logs, label: "Histórico", icon: History, adminOnly: true },
   { href: routes.configuracoes, label: "Configurações", icon: Settings, adminOnly: true },
 ];
