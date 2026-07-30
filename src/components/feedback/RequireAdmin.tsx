@@ -8,14 +8,15 @@ import { useAuth } from "@/providers/AuthProvider";
 import { routes } from "@/constants/routes";
 
 /**
- * Bloqueia a tela para usuários não-admin. É defesa de UI: a API já rejeita
- * essas rotas com 403 (AdminGuard), então isto evita renderizar uma tela que só
- * produziria erros de request.
+ * Bloqueia a tela para quem não é administrador. Continua existindo ao lado do
+ * RequireRole porque as áreas de administração do sistema (usuários, histórico,
+ * configurações) não viram papel delegável — quem edita usuários poderia se
+ * promover a admin.
  */
 export function RequireAdmin({ children }: { children: React.ReactNode }) {
-  const { session } = useAuth();
+  const { isAdmin } = useAuth();
 
-  if (!session?.user.admin) {
+  if (!isAdmin) {
     return (
       <EmptyState
         icon={<ShieldAlert className="h-5 w-5" />}

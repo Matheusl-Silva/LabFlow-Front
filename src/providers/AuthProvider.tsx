@@ -10,13 +10,17 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import { authService } from "@/services/auth.service";
-import type { AuthSession } from "@/types";
+import { temPapel, type AuthSession, type Role } from "@/types";
 import type { LoginInput } from "@/schemas/auth.schema";
 
 interface AuthContextValue {
   session: AuthSession | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  /** Acesso ao módulo. O ADMIN passa em qualquer papel. */
+  has: (role: Role) => boolean;
+  /** Poder administrativo: usuários, histórico, configurações. */
+  isAdmin: boolean;
   login: (input: LoginInput) => Promise<void>;
   logout: () => void;
 }
@@ -49,6 +53,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       session,
       isLoading,
       isAuthenticated: !!session,
+      has: (role: Role) => temPapel(session?.user, role),
+      isAdmin: !!session?.user.admin,
       login,
       logout,
     }),

@@ -31,10 +31,10 @@ import {
   type SituacaoFilter,
 } from "@/features/estoque/lib/filterItens";
 
+// Sem checagem de perfil dentro da tela: o RequireRole no layout já garante que
+// quem chega aqui tem o papel STOCK, e o papel dá acesso ao módulo inteiro —
+// não existe subconjunto de ações para diferenciar.
 export default function EstoquePage() {
-  const { session } = useAuth();
-  const isAdmin = !!session?.user.admin;
-
   const query = useEstoqueQuery();
   const deleteMutation = useDeleteItemEstoque();
   const movimentarMutation = useMovimentarEstoque();
@@ -92,14 +92,12 @@ export default function EstoquePage() {
             : "Itens, quantidades e alertas de reposição do laboratório."
         }
         actions={
-          isAdmin ? (
-            <Button asChild>
-              <Link href={`${routes.estoque}/novo`}>
-                <Plus className="h-4 w-4" />
-                Novo item
-              </Link>
-            </Button>
-          ) : undefined
+          <Button asChild>
+            <Link href={`${routes.estoque}/novo`}>
+              <Plus className="h-4 w-4" />
+              Novo item
+            </Link>
+          </Button>
         }
       />
 
@@ -139,7 +137,6 @@ export default function EstoquePage() {
             itens={sortItensByCriticidade(
               filterItens(data, { search, tipo, situacao }),
             )}
-            isAdmin={isAdmin}
             onMovimentar={setToMove}
             onDelete={setToDelete}
             empty={
@@ -149,12 +146,10 @@ export default function EstoquePage() {
                 description={
                   filtrouAlgo
                     ? "Ajuste os filtros e tente novamente."
-                    : isAdmin
-                      ? "Cadastre o primeiro item do estoque para acompanhar as quantidades."
-                      : "Nenhum item cadastrado no estoque."
+                    : "Cadastre o primeiro item do estoque para acompanhar as quantidades."
                 }
                 action={
-                  !filtrouAlgo && isAdmin ? (
+                  !filtrouAlgo ? (
                     <Button asChild>
                       <Link href={`${routes.estoque}/novo`}>
                         <Plus className="h-4 w-4" />

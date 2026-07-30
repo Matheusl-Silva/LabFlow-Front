@@ -26,7 +26,7 @@ export default function EditarPacientePage() {
   const router = useRouter();
   const params = useParams<{ id: string }>();
   const id = params?.id;
-  const { session } = useAuth();
+  const { has } = useAuth();
 
   const { data: paciente, isLoading, isError } = usePacienteQuery(id);
   const updateMutation = useUpdatePaciente(id!);
@@ -34,12 +34,12 @@ export default function EditarPacientePage() {
 
   const [confirmOpen, setConfirmOpen] = useState(false);
 
-  // Editar exige ler os dados pessoais — restrito a admin, tanto aqui quanto na API.
-  if (!session?.user.admin) {
+  // Editar exige ler os dados pessoais: papel PATIENTS, aqui e na API.
+  if (!has("PATIENTS")) {
     return (
       <EmptyState
         title="Acesso restrito"
-        description="Somente administradores podem ver e editar os dados pessoais dos pacientes."
+        description="Ver e editar os dados pessoais dos pacientes exige o perfil de Pacientes."
         action={
           <Button asChild variant="outline">
             <Link href={routes.pacientes}>Voltar para a lista</Link>

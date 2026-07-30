@@ -15,10 +15,15 @@ const KEYS = {
   detail: (id: number | string) => [...KEYS.all, "detail", String(id)] as const,
 };
 
-export function useEstoqueQuery(): UseQueryResult<ItemEstoque[], Error> {
+/**
+ * `enabled` para as telas que só mostram o estoque a quem tem o papel STOCK
+ * (o dashboard): sem isso, a consulta dispararia um 403 para todo mundo.
+ */
+export function useEstoqueQuery(enabled = true): UseQueryResult<ItemEstoque[], Error> {
   return useQuery({
     queryKey: KEYS.list(),
     queryFn: () => estoqueService.listar(),
+    enabled,
   });
 }
 

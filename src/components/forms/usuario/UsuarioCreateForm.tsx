@@ -13,9 +13,9 @@ import {
   type UsuarioCreateInput,
   type UsuarioCreateOutput,
 } from "@/schemas/usuario.schema";
-import type { UsuarioInput } from "@/types";
+import type { Role, UsuarioInput } from "@/types";
 import { PasswordToggle } from "./PasswordToggle";
-import { AdminToggle } from "./AdminToggle";
+import { RolesPicker } from "./RolesPicker";
 
 interface UsuarioCreateFormProps {
   submitLabel?: string;
@@ -37,7 +37,7 @@ export function UsuarioCreateForm({
     formState: { errors, isSubmitting },
   } = useForm<UsuarioCreateInput, undefined, UsuarioCreateOutput>({
     resolver: zodResolver(usuarioCreateSchema),
-    defaultValues: { nome: "", email: "", senha: "", confirmacao: "", admin: false },
+    defaultValues: { nome: "", email: "", senha: "", confirmacao: "", roles: [] },
   });
 
   async function handleValid(values: UsuarioCreateOutput) {
@@ -45,7 +45,7 @@ export function UsuarioCreateForm({
       nome: values.nome,
       email: values.email,
       senha: values.senha,
-      admin: values.admin,
+      roles: values.roles as Role[],
     });
   }
 
@@ -95,12 +95,15 @@ export function UsuarioCreateForm({
       </FormField>
 
       <div className="space-y-1.5">
-        <Label>Permissão</Label>
+        <Label>Perfis de acesso</Label>
         <Controller
           control={control}
-          name="admin"
+          name="roles"
           render={({ field }) => (
-            <AdminToggle value={!!field.value} onChange={field.onChange} />
+            <RolesPicker
+              value={(field.value ?? []) as Role[]}
+              onChange={field.onChange}
+            />
           )}
         />
       </div>

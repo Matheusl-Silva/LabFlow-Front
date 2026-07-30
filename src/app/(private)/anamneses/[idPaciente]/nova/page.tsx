@@ -8,7 +8,6 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { LoadingState } from "@/components/feedback/LoadingState";
 import { EmptyState } from "@/components/feedback/EmptyState";
-import { RequireAdmin } from "@/components/feedback/RequireAdmin";
 import { AnamneseForm } from "@/features/anamneses/components/AnamneseForm";
 import { usePacienteQuery } from "@/hooks/usePacientes";
 import { useCreateAnamnese } from "@/hooks/useAnamnese";
@@ -18,9 +17,7 @@ import { nomePaciente } from "@/types";
 
 export default function NovaAnamnesePage() {
   return (
-    <RequireAdmin>
       <Conteudo />
-    </RequireAdmin>
   );
 }
 

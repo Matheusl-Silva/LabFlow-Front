@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { LoadingState } from "@/components/feedback/LoadingState";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { ConfirmDialog } from "@/components/modals/ConfirmDialog";
-import { RequireAdmin } from "@/components/feedback/RequireAdmin";
 import { AnamneseForm } from "@/features/anamneses/components/AnamneseForm";
 import {
   useAnamneseQuery,
@@ -23,9 +22,7 @@ import { routes } from "@/constants/routes";
 
 export default function AnamneseDetalhePage() {
   return (
-    <RequireAdmin>
       <Conteudo />
-    </RequireAdmin>
   );
 }
 

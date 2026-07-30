@@ -13,7 +13,6 @@ import { EmptyState } from "@/components/feedback/EmptyState";
 import { LoadingState } from "@/components/feedback/LoadingState";
 import { TableSkeleton } from "@/components/tables/TableSkeleton";
 import { ConfirmDialog } from "@/components/modals/ConfirmDialog";
-import { RequireAdmin } from "@/components/feedback/RequireAdmin";
 import { usePacienteQuery } from "@/hooks/usePacientes";
 import { useAnamnesesByPatientQuery, useDeleteAnamnese } from "@/hooks/useAnamnese";
 import { isApiError } from "@/lib/http/errors";
@@ -23,9 +22,7 @@ import { AnamnesesTable } from "@/features/anamneses/components/AnamnesesTable";
 
 export default function AnamnesesDoPacientePage() {
   return (
-    <RequireAdmin>
       <Conteudo />
-    </RequireAdmin>
   );
 }
 

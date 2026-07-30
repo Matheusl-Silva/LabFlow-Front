@@ -1,8 +1,9 @@
-import type { Usuario } from "@/types";
+import type { Role, Usuario } from "@/types";
 
 export interface UsuariosFilter {
   search: string;
-  tipo: "" | "admin" | "comum";
+  /** Papel exigido, ou "sem-acesso" para os usuários sem nenhum papel. */
+  tipo: "" | Role | "sem-acesso";
   status: "" | "ativo" | "pendente";
 }
 
@@ -12,8 +13,10 @@ export function filterUsuarios(
 ): Usuario[] {
   const term = search.trim().toLowerCase();
   return usuarios.filter((u) => {
-    if (tipo === "admin" && !u.admin) return false;
-    if (tipo === "comum" && u.admin) return false;
+    // Filtro LITERAL, sem o superpoder do ADMIN: aqui a pergunta é "quem tem
+    // este papel concedido?", e não "quem consegue acessar este módulo?".
+    if (tipo === "sem-acesso" && u.roles.length > 0) return false;
+    if (tipo && tipo !== "sem-acesso" && !u.roles.includes(tipo)) return false;
     if (status === "ativo" && !u.ativo) return false;
     if (status === "pendente" && u.ativo) return false;
     if (!term) return true;

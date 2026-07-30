@@ -16,15 +16,15 @@ import { STATUS_BADGE, STATUS_LABEL } from "../lib/statusEstoque";
 interface EstoqueTableProps {
   itens: ItemEstoque[];
   empty: React.ReactNode;
-  isAdmin: boolean;
   onMovimentar: (item: ItemEstoque) => void;
   onDelete: (item: ItemEstoque) => void;
 }
 
+// Sem prop de perfil: o papel STOCK dá acesso ao módulo inteiro, então quem
+// chega até esta tabela pode movimentar, editar e excluir.
 export function EstoqueTable({
   itens,
   empty,
-  isAdmin,
   onMovimentar,
   onDelete,
 }: EstoqueTableProps) {
@@ -113,24 +113,20 @@ export function EstoqueTable({
             <ArrowDownUp className="h-4 w-4" />
             Movimentar
           </Button>
-          {isAdmin && (
-            <>
-              <Button asChild variant="ghost" size="icon" aria-label={`Editar ${i.nome}`}>
-                <Link href={`${routes.estoque}/${i.id}`}>
-                  <Pencil className="h-4 w-4" />
-                </Link>
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label={`Excluir ${i.nome}`}
-                onClick={() => onDelete(i)}
-                className="text-red-600 hover:bg-red-50 hover:text-red-700"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </>
-          )}
+          <Button asChild variant="ghost" size="icon" aria-label={`Editar ${i.nome}`}>
+            <Link href={`${routes.estoque}/${i.id}`}>
+              <Pencil className="h-4 w-4" />
+            </Link>
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={`Excluir ${i.nome}`}
+            onClick={() => onDelete(i)}
+            className="text-red-600 hover:bg-red-50 hover:text-red-700"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
         </div>
       ),
     },

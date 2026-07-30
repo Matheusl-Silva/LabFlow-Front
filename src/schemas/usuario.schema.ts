@@ -1,5 +1,11 @@
 import { z } from "zod";
 
+const roleSchema = z.enum(["ADMIN", "EXAMS", "STOCK", "PATIENTS"]);
+
+// Lista vazia e valida: aprovar a conta agora e decidir os acessos depois e um
+// fluxo real. A tela avisa que a pessoa nao vera nenhum modulo.
+const roles = z.array(roleSchema);
+
 const senhaForte = z
   .string()
   .min(8, "A senha deve ter no mínimo 8 caracteres")
@@ -12,7 +18,7 @@ export const usuarioCreateSchema = z
     email: z.string().min(1, "Informe o e-mail").email("E-mail inválido"),
     senha: senhaForte,
     confirmacao: z.string().min(1, "Confirme a senha"),
-    admin: z.boolean(),
+    roles,
   })
   .refine((d) => d.senha === d.confirmacao, {
     path: ["confirmacao"],
@@ -30,7 +36,7 @@ export const usuarioEditSchema = z
         (v) => !v || v.length >= 8,
         "A nova senha deve ter no mínimo 8 caracteres",
       ),
-    admin: z.boolean(),
+    roles,
   });
 
 export type UsuarioCreateInput = z.input<typeof usuarioCreateSchema>;

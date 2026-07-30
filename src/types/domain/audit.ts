@@ -4,7 +4,8 @@ export type AuditEntity =
   | "exam_template"
   | "patient"
   | "anamnesis"
-  | "stock_item";
+  | "stock_item"
+  | "user";
 
 export interface AuditLog {
   id: number;

@@ -8,31 +8,13 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ItemEstoqueForm } from "@/components/forms/ItemEstoqueForm";
-import { EmptyState } from "@/components/feedback/EmptyState";
 import { useCreateItemEstoque } from "@/hooks/useEstoque";
-import { useAuth } from "@/providers/AuthProvider";
 import { isApiError } from "@/lib/http/errors";
 import { routes } from "@/constants/routes";
 
 export default function NovoItemEstoquePage() {
   const router = useRouter();
-  const { session } = useAuth();
   const createMutation = useCreateItemEstoque();
-
-  // Espelha a regra da API: cadastrar item é exclusivo de admin.
-  if (!session?.user.admin) {
-    return (
-      <EmptyState
-        title="Acesso restrito"
-        description="Somente administradores podem cadastrar itens no estoque."
-        action={
-          <Button asChild variant="outline">
-            <Link href={routes.estoque}>Voltar para o estoque</Link>
-          </Button>
-        }
-      />
-    );
-  }
 
   return (
     <div className="space-y-6">

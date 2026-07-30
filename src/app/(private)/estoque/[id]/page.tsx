@@ -17,7 +17,6 @@ import {
   useItemEstoqueQuery,
   useUpdateItemEstoque,
 } from "@/hooks/useEstoque";
-import { useAuth } from "@/providers/AuthProvider";
 import { isApiError } from "@/lib/http/errors";
 import { routes } from "@/constants/routes";
 import { statusEstoque, UNIDADE_ABREV } from "@/types";
@@ -27,7 +26,6 @@ export default function EditarItemEstoquePage() {
   const router = useRouter();
   const params = useParams<{ id: string }>();
   const id = params?.id;
-  const { session } = useAuth();
 
   const { data: item, isLoading, isError } = useItemEstoqueQuery(id);
   const updateMutation = useUpdateItemEstoque(id!);
@@ -35,19 +33,6 @@ export default function EditarItemEstoquePage() {
 
   const [confirmOpen, setConfirmOpen] = useState(false);
 
-  if (!session?.user.admin) {
-    return (
-      <EmptyState
-        title="Acesso restrito"
-        description="Somente administradores podem editar os itens do estoque. Para dar entrada ou baixa, use o botão “Movimentar” na lista."
-        action={
-          <Button asChild variant="outline">
-            <Link href={routes.estoque}>Voltar para o estoque</Link>
-          </Button>
-        }
-      />
-    );
-  }
 
   if (isLoading) return <LoadingState label="Carregando item…" />;
 

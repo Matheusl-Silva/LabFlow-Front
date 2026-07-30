@@ -27,8 +27,10 @@ import {
 } from "@/features/pacientes/lib/filterPacientes";
 
 export default function PacientesPage() {
-  const { session } = useAuth();
-  const isAdmin = !!session?.user.admin;
+  // O papel PATIENTS ve o cadastro completo e pode editar; quem chega aqui
+  // so com EXAMS recebe a listagem anonimizada da API, sem acoes de escrita.
+  const { has } = useAuth();
+  const podeGerenciar = has("PATIENTS");
 
   const query = usePacientesQuery();
   const deleteMutation = useDeletePaciente();
@@ -55,14 +57,14 @@ export default function PacientesPage() {
       <PageHeader
         title="Pacientes"
         description={
-          isAdmin
+          podeGerenciar
             ? query.data
               ? `${query.data.length} paciente${query.data.length === 1 ? "" : "s"} cadastrado${query.data.length === 1 ? "" : "s"}.`
               : "Gerencie os pacientes do laboratório."
             : "Os dados pessoais dos pacientes são visíveis apenas para administradores."
         }
         actions={
-          isAdmin ? (
+          podeGerenciar ? (
             <Button asChild>
               <Link href={`${routes.pacientes}/novo`}>
                 <Plus className="h-4 w-4" />
@@ -79,7 +81,7 @@ export default function PacientesPage() {
         onSearchChange={setSearch}
         periodo={periodo}
         onPeriodoChange={setPeriodo}
-        searchable={isAdmin}
+        searchable={podeGerenciar}
       />
 
       <Async
@@ -103,7 +105,7 @@ export default function PacientesPage() {
             pacientes={sortPacientesByCadastroDesc(
               filterPacientes(data, { search, periodo }),
             )}
-            isAdmin={isAdmin}
+            podeGerenciar={podeGerenciar}
             onDelete={setToDelete}
             empty={
               <EmptyState
@@ -114,12 +116,12 @@ export default function PacientesPage() {
                 description={
                   filtrouAlgo
                     ? "Ajuste os filtros e tente novamente."
-                    : isAdmin
+                    : podeGerenciar
                       ? "Comece criando o primeiro paciente do sistema."
                       : "Nenhum paciente disponível."
                 }
                 action={
-                  !filtrouAlgo && isAdmin ? (
+                  !filtrouAlgo && podeGerenciar ? (
                     <Button asChild>
                       <Link href={`${routes.pacientes}/novo`}>
                         <Plus className="h-4 w-4" />

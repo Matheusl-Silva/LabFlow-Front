@@ -29,8 +29,7 @@ import { UsuariosTable } from "@/features/usuarios/components/UsuariosTable";
 import { filterUsuarios } from "@/features/usuarios/lib/filterUsuarios";
 
 export default function UsuariosPage() {
-  const { session } = useAuth();
-  const isAdmin = !!session?.user.admin;
+  const { session, isAdmin } = useAuth();
 
   const query = useUsuariosQuery(isAdmin);
   const deleteMutation = useDeleteUsuario();

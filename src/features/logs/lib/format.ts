@@ -18,6 +18,7 @@ export const ENTITY_LABEL: Record<AuditEntity, string> = {
   patient: "Paciente",
   anamnesis: "Anamnese",
   stock_item: "Item de estoque",
+  user: "Usuário",
 };
 
 /**
@@ -80,6 +81,9 @@ export const FIELD_LABEL: Record<string, string> = {
   quantity: "Quantidade",
   minQuantity: "Estoque mínimo",
   description: "Observações",
+  // Usuário
+  roles: "Perfis de acesso",
+  isActive: "Conta ativa",
 };
 
 export function fieldLabel(field: string): string {

@@ -16,14 +16,14 @@ import { routes } from "@/constants/routes";
 
 export default function NovoPacientePage() {
   const router = useRouter();
-  const { session } = useAuth();
+  const { has } = useAuth();
   const createMutation = useCreatePaciente();
 
-  if (!session?.user.admin) {
+  if (!has("PATIENTS")) {
     return (
       <EmptyState
         title="Acesso restrito"
-        description="Somente administradores podem cadastrar pacientes."
+        description="Cadastrar paciente exige o perfil de Pacientes. Peca a um administrador para liberar o seu acesso."
         action={
           <Button asChild variant="outline">
             <Link href={routes.pacientes}>Voltar para a lista</Link>

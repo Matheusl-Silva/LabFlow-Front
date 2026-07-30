@@ -5,7 +5,7 @@ import { Check, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DataTable, type Column } from "@/components/tables/DataTable";
 import { routes } from "@/constants/routes";
-import type { Usuario } from "@/types";
+import { ROLE_LABEL, ROLES, type Usuario } from "@/types";
 
 interface UsuariosTableProps {
   usuarios: Usuario[];
@@ -36,18 +36,32 @@ export function UsuariosTable({
     },
     { key: "email", header: "E-mail", cell: (u) => u.email },
     {
-      key: "tipo",
-      header: "Tipo",
-      cell: (u) =>
-        u.admin ? (
-          <span className="inline-flex rounded-full bg-brand-100 px-2.5 py-0.5 text-xs font-medium text-brand-800">
-            Administrador
-          </span>
-        ) : (
-          <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-700">
-            Usuário
-          </span>
-        ),
+      key: "perfis",
+      header: "Perfis",
+      cell: (u) => {
+        if (u.roles.length === 0) {
+          return <span className="text-xs text-amber-700">Sem acesso</span>;
+        }
+        // Ordem fixa de ROLES para as linhas ficarem alinhadas entre si, em vez
+        // da ordem em que os papéis foram concedidos.
+        const ordenados = ROLES.filter((r) => u.roles.includes(r));
+        return (
+          <div className="flex flex-wrap gap-1">
+            {ordenados.map((role) => (
+              <span
+                key={role}
+                className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                  role === "ADMIN"
+                    ? "bg-brand-100 text-brand-800"
+                    : "bg-slate-100 text-slate-700"
+                }`}
+              >
+                {ROLE_LABEL[role]}
+              </span>
+            ))}
+          </div>
+        );
+      },
     },
     {
       key: "status",

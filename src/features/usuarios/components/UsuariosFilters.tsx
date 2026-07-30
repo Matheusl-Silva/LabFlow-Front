@@ -3,14 +3,15 @@
 import { Search } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { ROLE_LABEL, ROLES, type Role } from "@/types";
 
-export type TipoFilter = "" | "admin" | "comum";
+export type TipoFilter = "" | Role | "sem-acesso";
 export type StatusFilter = "" | "ativo" | "pendente";
 
 const TIPO_FILTERS: { value: TipoFilter; label: string }[] = [
-  { value: "", label: "Todos os tipos" },
-  { value: "admin", label: "Administradores" },
-  { value: "comum", label: "Usuários comuns" },
+  { value: "", label: "Todos os perfis" },
+  ...ROLES.map((role) => ({ value: role as TipoFilter, label: ROLE_LABEL[role] })),
+  { value: "sem-acesso" as TipoFilter, label: "Sem acesso" },
 ];
 
 const STATUS_FILTERS: { value: StatusFilter; label: string }[] = [

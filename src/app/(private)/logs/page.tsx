@@ -18,8 +18,7 @@ import { LogsFilters } from "@/features/logs/components/LogsFilters";
 import { LogDiffDialog } from "@/features/logs/components/LogDiffDialog";
 
 export default function LogsPage() {
-  const { session } = useAuth();
-  const isAdmin = !!session?.user.admin;
+  const { session, isAdmin } = useAuth();
 
   const [filters, setFilters] = useState<AuditLogFilters>({ page: 1, limit: 20 });
   const [inspecting, setInspecting] = useState<AuditLog | null>(null);

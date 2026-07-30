@@ -16,6 +16,7 @@ import {
   useDeleteUsuario,
   useUpdateUsuario,
   useUsuarioQuery,
+  useUsuariosQuery,
 } from "@/hooks/useUsuarios";
 import { useAuth } from "@/providers/AuthProvider";
 import { isApiError } from "@/lib/http/errors";
@@ -25,15 +26,18 @@ export default function EditarUsuarioPage() {
   const router = useRouter();
   const params = useParams<{ id: string }>();
   const id = params?.id;
-  const { session } = useAuth();
+  const { session, isAdmin } = useAuth();
 
   const { data: usuario, isLoading, isError } = useUsuarioQuery(id);
+  // Para saber se este é o último administrador ativo — a API recusa remover o
+  // papel nesse caso (409), então travamos o checkbox antes de tentar.
+  const { data: usuarios = [] } = useUsuariosQuery();
   const updateMutation = useUpdateUsuario(id!);
   const deleteMutation = useDeleteUsuario();
 
   const [confirmOpen, setConfirmOpen] = useState(false);
 
-  if (!session?.user.admin) {
+  if (!isAdmin) {
     return (
       <EmptyState
         title="Acesso restrito"
@@ -64,6 +68,9 @@ export default function EditarUsuarioPage() {
   }
 
   const isSelf = session?.user.id === usuario.id;
+  const outrosAdminsAtivos = usuarios.filter(
+    (u) => u.id !== usuario.id && u.ativo && u.roles.includes("ADMIN"),
+  ).length;
 
   return (
     <div className="space-y-6">
@@ -95,6 +102,7 @@ export default function EditarUsuarioPage() {
         <CardContent className="p-6">
           <UsuarioEditForm
             initial={usuario}
+            lockAdmin={usuario.roles.includes("ADMIN") && outrosAdminsAtivos === 0}
             submitLabel="Salvar alterações"
             onCancel={() => router.push(routes.usuarios)}
             onSubmit={async (data) => {
