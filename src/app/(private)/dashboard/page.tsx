@@ -27,6 +27,9 @@ export default function DashboardPage() {
   const { data: usuarios, isLoading: loadingUsuarios } = useUsuariosQuery(isAdmin);
 
   const itensParaRepor = (estoque ?? []).filter(precisaRepor).length;
+  // Auto-cadastro fica pendente até um admin aprovar. Sem este aviso, a única
+  // forma de descobrir que alguém está esperando é abrir a tela de usuários.
+  const aguardandoAprovacao = (usuarios ?? []).filter((u) => !u.ativo).length;
 
   const kpis: {
     label: string;
@@ -94,6 +97,24 @@ export default function DashboardPage() {
           title="Nenhum módulo liberado"
           description="Sua conta está ativa, mas ainda não tem nenhum perfil de acesso. Peça a um administrador para liberar as áreas que você precisa usar."
         />
+      )}
+
+      {aguardandoAprovacao > 0 && (
+        <Link href={routes.usuarios} className="block">
+          <Card className="border-brand-300 bg-brand-50 transition-shadow hover:shadow-md">
+            <CardContent className="flex items-center gap-3 p-4 text-sm text-brand-900">
+              <UserCog className="h-4 w-4 shrink-0" />
+              <span>
+                <strong>
+                  {aguardandoAprovacao}{" "}
+                  {aguardandoAprovacao === 1 ? "cadastro" : "cadastros"}
+                </strong>{" "}
+                {aguardandoAprovacao === 1 ? "aguarda" : "aguardam"} sua
+                aprovação para acessar o sistema.
+              </span>
+            </CardContent>
+          </Card>
+        </Link>
       )}
 
       {itensParaRepor > 0 && (

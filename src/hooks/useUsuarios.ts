@@ -7,7 +7,7 @@ import {
   type UseQueryResult,
 } from "@tanstack/react-query";
 import { usuarioService } from "@/services/usuario.service";
-import type { Usuario, UsuarioInput } from "@/types";
+import type { Role, Usuario, UsuarioInput } from "@/types";
 
 const KEYS = {
   all: ["usuarios"] as const,
@@ -57,6 +57,19 @@ export function useSetUsuarioAtivo() {
   return useMutation({
     mutationFn: ({ id, ativo }: { id: number | string; ativo: boolean }) =>
       usuarioService.definirAtivo(id, ativo),
+    onSuccess: (_data, { id }) => {
+      qc.invalidateQueries({ queryKey: KEYS.list() });
+      qc.invalidateQueries({ queryKey: KEYS.detail(id) });
+    },
+  });
+}
+
+/** Aprova a conta e concede os papéis de uma vez. */
+export function useAprovarUsuario() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, roles }: { id: number | string; roles: Role[] }) =>
+      usuarioService.aprovar(id, roles),
     onSuccess: (_data, { id }) => {
       qc.invalidateQueries({ queryKey: KEYS.list() });
       qc.invalidateQueries({ queryKey: KEYS.detail(id) });

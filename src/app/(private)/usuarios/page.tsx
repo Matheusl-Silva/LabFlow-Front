@@ -12,13 +12,13 @@ import { TableSkeleton } from "@/components/tables/TableSkeleton";
 import { ConfirmDialog } from "@/components/modals/ConfirmDialog";
 import { useAuth } from "@/providers/AuthProvider";
 import {
+  useAprovarUsuario,
   useDeleteUsuario,
-  useSetUsuarioAtivo,
   useUsuariosQuery,
 } from "@/hooks/useUsuarios";
 import { isApiError } from "@/lib/http/errors";
 import { routes } from "@/constants/routes";
-import type { Usuario } from "@/types";
+import type { Role, Usuario } from "@/types";
 
 import {
   UsuariosFilters,
@@ -26,6 +26,7 @@ import {
   type TipoFilter,
 } from "@/features/usuarios/components/UsuariosFilters";
 import { UsuariosTable } from "@/features/usuarios/components/UsuariosTable";
+import { AprovarUsuarioDialog } from "@/features/usuarios/components/AprovarUsuarioDialog";
 import { filterUsuarios } from "@/features/usuarios/lib/filterUsuarios";
 
 export default function UsuariosPage() {
@@ -33,12 +34,13 @@ export default function UsuariosPage() {
 
   const query = useUsuariosQuery(isAdmin);
   const deleteMutation = useDeleteUsuario();
-  const approveMutation = useSetUsuarioAtivo();
+  const approveMutation = useAprovarUsuario();
 
   const [search, setSearch] = useState("");
   const [tipo, setTipo] = useState<TipoFilter>("");
   const [status, setStatus] = useState<StatusFilter>("");
   const [toDelete, setToDelete] = useState<Usuario | null>(null);
+  const [toApprove, setToApprove] = useState<Usuario | null>(null);
 
   const filtrouAlgo = !!search || !!tipo || !!status;
 
@@ -68,10 +70,16 @@ export default function UsuariosPage() {
     }
   }
 
-  async function handleApprove(usuario: Usuario) {
+  async function handleApprove(roles: Role[]) {
+    if (!toApprove) return;
     try {
-      await approveMutation.mutateAsync({ id: usuario.id, ativo: true });
-      toast.success(`Acesso de "${usuario.nome}" aprovado.`);
+      await approveMutation.mutateAsync({ id: toApprove.id, roles });
+      toast.success(
+        roles.length > 0
+          ? `Acesso de "${toApprove.nome}" aprovado.`
+          : `Conta de "${toApprove.nome}" aprovada, mas sem nenhum perfil: a pessoa entra e não vê nenhuma tela.`,
+      );
+      setToApprove(null);
     } catch (err) {
       toast.error(isApiError(err) ? err.message : "Falha ao aprovar usuário.");
     }
@@ -126,7 +134,7 @@ export default function UsuariosPage() {
             usuarios={filterUsuarios(data, { search, tipo, status })}
             currentUserId={session?.user.id}
             onDelete={setToDelete}
-            onApprove={handleApprove}
+            onApprove={setToApprove}
             approvingId={
               approveMutation.isPending
                 ? (approveMutation.variables?.id as number)
@@ -158,6 +166,13 @@ export default function UsuariosPage() {
           />
         )}
       </Async>
+
+      <AprovarUsuarioDialog
+        usuario={toApprove}
+        loading={approveMutation.isPending}
+        onClose={() => setToApprove(null)}
+        onConfirm={handleApprove}
+      />
 
       <ConfirmDialog
         open={!!toDelete}

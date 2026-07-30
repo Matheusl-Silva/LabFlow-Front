@@ -1,5 +1,5 @@
 import { usuarioRepository } from "@/repositories/usuario.repository";
-import type { Usuario, UsuarioInput } from "@/types";
+import type { Role, Usuario, UsuarioInput } from "@/types";
 
 export const usuarioService = {
   listar: (): Promise<Usuario[]> => usuarioRepository.listAll(),
@@ -9,5 +9,7 @@ export const usuarioService = {
     usuarioRepository.update(id, input),
   definirAtivo: (id: number | string, ativo: boolean): Promise<void> =>
     usuarioRepository.setAtivo(id, ativo),
+  aprovar: (id: number | string, roles: Role[]): Promise<void> =>
+    usuarioRepository.aprovar(id, roles),
   remover: (id: number | string): Promise<void> => usuarioRepository.remove(id),
 };

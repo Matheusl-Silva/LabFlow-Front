@@ -63,6 +63,12 @@ export const httpUsuarioRepository: UsuarioRepository = {
     await httpClient.put(endpoints.usuarios.byId(id), { isActive: ativo });
   },
 
+  async aprovar(id, roles) {
+    // Um PUT só: aprovar a conta sem conceder papel deixaria a pessoa entrando
+    // no sistema e tomando 403 em todas as telas.
+    await httpClient.put(endpoints.usuarios.byId(id), { isActive: true, roles });
+  },
+
   async remove(id) {
     await httpClient.delete(endpoints.usuarios.byId(id));
   },
