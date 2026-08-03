@@ -13,8 +13,12 @@ export interface AuditLog {
   entity: AuditEntity;
   entityId: number;
   userId: number;
-  /** Opcional: só vem se o backend fizer o join (Passo 9 do guia backend). */
-  userName?: string;
+  /**
+   * Nome de quem fez a ação, resolvido pela API (inclusive para usuários já
+   * excluídos). Anulável: só fica nulo se o registro do autor não existir mais
+   * nem como exclusão lógica.
+   */
+  userName?: string | null;
   before: Record<string, unknown> | null;
   after: Record<string, unknown> | null;
   createdAt: string;

@@ -25,7 +25,8 @@ export default function LogsPage() {
 
   const query = useAuditLogsQuery(filters, isAdmin);
 
-  // Resolve nome do usuário no cliente (opção 2 do guia backend).
+  // A API já manda `userName` em cada evento. Esta lista serve ao filtro por
+  // usuário e, de quebra, cobre uma API antiga que ainda não faça o join.
   const usuariosQuery = useUsuariosQuery(isAdmin);
   const userName = (id: number) =>
     usuariosQuery.data?.find((u) => u.id === id)?.nome;
