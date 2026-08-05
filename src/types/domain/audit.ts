@@ -1,4 +1,5 @@
-export type AuditAction = "CREATE" | "UPDATE" | "DELETE";
+/** `ADJUST` é a movimentação de estoque — separada do `UPDATE` (edição). */
+export type AuditAction = "CREATE" | "UPDATE" | "DELETE" | "ADJUST";
 export type AuditEntity =
   | "exam"
   | "exam_template"
