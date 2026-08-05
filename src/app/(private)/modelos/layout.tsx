@@ -10,5 +10,5 @@ import { RequireRole } from "@/components/feedback/RequireRole";
  * Defesa de UI apenas: a API é a autoridade e responde 403 de qualquer forma.
  */
 export default function ModelosLayout({ children }: { children: React.ReactNode }) {
-  return <RequireRole role={"EXAMS"}>{children}</RequireRole>;
+  return <RequireRole role={"EXAM_TEMPLATES"}>{children}</RequireRole>;
 }

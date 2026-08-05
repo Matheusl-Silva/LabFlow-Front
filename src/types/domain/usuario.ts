@@ -6,21 +6,40 @@
  * `ADMIN` é superusuário: passa em qualquer checagem de papel, tanto no guard
  * da API quanto no `has()` do AuthProvider.
  */
-export type Role = "ADMIN" | "EXAMS" | "STOCK" | "PATIENTS";
+export type Role =
+  | "ADMIN"
+  | "EXAMS"
+  | "EXAM_TEMPLATES"
+  | "ANAMNESIS"
+  | "STOCK"
+  | "PATIENTS";
 
 /** Ordem de exibição nas listas e no formulário de usuário. */
-export const ROLES: Role[] = ["ADMIN", "EXAMS", "STOCK", "PATIENTS"];
+export const ROLES: Role[] = [
+  "ADMIN",
+  "EXAMS",
+  "EXAM_TEMPLATES",
+  "ANAMNESIS",
+  "STOCK",
+  "PATIENTS",
+];
 
 export const ROLE_LABEL: Record<Role, string> = {
   ADMIN: "Administrador",
-  EXAMS: "Exames",
+  EXAMS: "Lançar exames",
+  EXAM_TEMPLATES: "Editar exames e modelos",
+  ANAMNESIS: "Anamneses",
   STOCK: "Estoque",
   PATIENTS: "Pacientes",
 };
 
 export const ROLE_DESCRIPTION: Record<Role, string> = {
   ADMIN: "Acesso total, incluindo usuários, histórico e configurações.",
-  EXAMS: "Exames, modelos de exame e anamneses.",
+  EXAMS:
+    "Lançar e consultar exames dos pacientes. Não edita nem exclui exames já lançados e não altera os modelos.",
+  EXAM_TEMPLATES:
+    "Editar e excluir exames já lançados e gerenciar os modelos de exame (criar, versionar e excluir).",
+  ANAMNESIS: "Cadastrar, consultar, editar e excluir anamneses.",
   STOCK: "Estoque de insumos: cadastrar, movimentar e excluir itens.",
   PATIENTS: "Cadastro de pacientes, incluindo os dados pessoais.",
 };

@@ -10,5 +10,7 @@ import { RequireRole } from "@/components/feedback/RequireRole";
  * Defesa de UI apenas: a API é a autoridade e responde 403 de qualquer forma.
  */
 export default function ExamesLayout({ children }: { children: React.ReactNode }) {
-  return <RequireRole role={"EXAMS"}>{children}</RequireRole>;
+  // Lançar (EXAMS) e editar/excluir (EXAM_TEMPLATES) entram na área de exames.
+  // As ações destrutivas dentro da tela ficam restritas a EXAM_TEMPLATES.
+  return <RequireRole role={["EXAMS", "EXAM_TEMPLATES"]}>{children}</RequireRole>;
 }

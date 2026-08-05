@@ -1,6 +1,9 @@
 import { z } from "zod";
+import { ROLES, type Role } from "@/types";
 
-const roleSchema = z.enum(["ADMIN", "EXAMS", "STOCK", "PATIENTS"]);
+// Deriva do enum de papéis único (`types/domain/usuario.ts`) para não haver duas
+// listas de papéis que possam divergir.
+const roleSchema = z.enum(ROLES as [Role, ...Role[]]);
 
 // Lista vazia e valida: aprovar a conta agora e decidir os acessos depois e um
 // fluxo real. A tela avisa que a pessoa nao vera nenhum modulo.

@@ -1,7 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Boxes, FlaskConical, ShieldAlert, UserCog, Users } from "lucide-react";
+import {
+  ArrowRight,
+  Boxes,
+  ClipboardList,
+  FileStack,
+  FlaskConical,
+  ShieldAlert,
+  UserCog,
+  Users,
+} from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/providers/AuthProvider";
@@ -18,7 +27,10 @@ export default function DashboardPage() {
 
   // Cada consulta só dispara para quem tem o papel: sem isso, o dashboard de um
   // usuário de estoque encheria o console de 403.
-  const podeVerPacientes = has("PATIENTS") || has("EXAMS");
+  const podeLancarExames = has("EXAMS") || has("EXAM_TEMPLATES");
+  // Todo mundo que trabalha sobre um paciente precisa da lista para escolher um.
+  const podeVerPacientes =
+    has("PATIENTS") || podeLancarExames || has("ANAMNESIS");
   const { data: pacientes, isLoading: loadingPacientes } =
     usePacientesQuery(podeVerPacientes);
   // GET /exam (contagem) é admin-only: para os demais o card vira só um atalho.
@@ -48,7 +60,7 @@ export default function DashboardPage() {
           },
         ]
       : []),
-    ...(has("EXAMS")
+    ...(podeLancarExames
       ? [
           {
             label: "Exames",
@@ -56,6 +68,28 @@ export default function DashboardPage() {
             hint: isAdmin ? undefined : "Registrar e consultar",
             href: routes.exames,
             icon: FlaskConical,
+          },
+        ]
+      : []),
+    ...(has("EXAM_TEMPLATES")
+      ? [
+          {
+            label: "Modelos de exame",
+            value: undefined,
+            hint: "Criar e editar modelos",
+            href: routes.modelos,
+            icon: FileStack,
+          },
+        ]
+      : []),
+    ...(has("ANAMNESIS")
+      ? [
+          {
+            label: "Anamneses",
+            value: undefined,
+            hint: "Registrar e consultar",
+            href: routes.anamneses,
+            icon: ClipboardList,
           },
         ]
       : []),
@@ -162,7 +196,7 @@ export default function DashboardPage() {
       </div>
 
       {/* O passo a passo é do fluxo de exames: some para quem não tem o papel. */}
-      {has("EXAMS") && (
+      {podeLancarExames && (
         <Card>
           <CardHeader>
             <CardTitle>Como funciona</CardTitle>

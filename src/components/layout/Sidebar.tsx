@@ -32,11 +32,11 @@ const nav: {
   adminOnly?: boolean;
 }[] = [
   { href: routes.dashboard, label: "Home", icon: LayoutDashboard, roles: [], adminOnly: false },
-  { href: routes.pacientes, label: "Pacientes", icon: Users, roles: ["PATIENTS", "EXAMS"] },
+  { href: routes.pacientes, label: "Pacientes", icon: Users, roles: ["PATIENTS", "EXAMS", "EXAM_TEMPLATES", "ANAMNESIS"] },
   { href: routes.usuarios, label: "Usuários", icon: UserCog, roles: [], adminOnly: true },
-  { href: routes.exames, label: "Exames", icon: FlaskConical, roles: ["EXAMS"] },
-  { href: routes.modelos, label: "Modelos de exame", icon: FileStack, roles: ["EXAMS"] },
-  { href: routes.anamneses, label: "Anamneses", icon: ClipboardList, roles: ["EXAMS"] },
+  { href: routes.exames, label: "Exames", icon: FlaskConical, roles: ["EXAMS", "EXAM_TEMPLATES"] },
+  { href: routes.modelos, label: "Modelos de exame", icon: FileStack, roles: ["EXAM_TEMPLATES"] },
+  { href: routes.anamneses, label: "Anamneses", icon: ClipboardList, roles: ["ANAMNESIS"] },
   { href: routes.estoque, label: "Estoque", icon: Boxes, roles: ["STOCK"] },
   { href: routes.logs, label: "Histórico", icon: History, roles: [], adminOnly: true },
   { href: routes.configuracoes, label: "Configurações", icon: Settings, roles: [], adminOnly: true },

@@ -13,16 +13,19 @@ interface HistoricoExamesTableProps {
   exames: ExamListItem[];
   empty: React.ReactNode;
   onDelete: (exam: ExamListItem) => void;
+  /**
+   * Editar e excluir são do papel EXAM_TEMPLATES. Quem só tem EXAMS lança e
+   * consulta, então recebe `false` e vê apenas o botão de visualizar.
+   */
+  canManage: boolean;
 }
-
-// Sem prop de perfil: o papel EXAMS da acesso ao modulo inteiro, entao quem
-// chega ate esta tabela pode visualizar, editar e excluir o exame.
 
 export function HistoricoExamesTable({
   idPaciente,
   exames,
   empty,
   onDelete,
+  canManage,
 }: HistoricoExamesTableProps) {
   // Mais recentes primeiro. Cópia para não mutar o array recebido por prop.
   const examesOrdenados = [...exames].sort(
@@ -68,25 +71,29 @@ export function HistoricoExamesTable({
               <Eye className="h-4 w-4" />
             </Link>
           </Button>
-          <Button
-            asChild
-            variant="ghost"
-            size="icon"
-            aria-label={`Editar exame ${e.id}`}
-          >
-            <Link href={`${routes.exames}/${idPaciente}/${e.id}/editar`}>
-              <Pencil className="h-4 w-4" />
-            </Link>
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label={`Excluir exame ${e.id}`}
-            onClick={() => onDelete(e)}
-            className="text-red-600 hover:bg-red-50 hover:text-red-700"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
+          {canManage && (
+            <>
+              <Button
+                asChild
+                variant="ghost"
+                size="icon"
+                aria-label={`Editar exame ${e.id}`}
+              >
+                <Link href={`${routes.exames}/${idPaciente}/${e.id}/editar`}>
+                  <Pencil className="h-4 w-4" />
+                </Link>
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={`Excluir exame ${e.id}`}
+                onClick={() => onDelete(e)}
+                className="text-red-600 hover:bg-red-50 hover:text-red-700"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </>
+          )}
         </div>
       ),
     },

@@ -26,6 +26,10 @@ export default function HistoricoExamesPage() {
   const params = useParams<{ idPaciente: string }>();
   const id = params?.idPaciente;
 
+  const { has } = useAuth();
+  // Editar e excluir exame já lançado são do papel EXAM_TEMPLATES.
+  const canManage = has("EXAM_TEMPLATES");
+
   const pacienteQuery = usePacienteQuery(id);
   const examesQuery = useExamsByPatientQuery(id);
   const deleteMutation = useDeleteExam(id!);
@@ -120,6 +124,7 @@ export default function HistoricoExamesPage() {
                 idPaciente={paciente.id}
                 exames={exames}
                 onDelete={setToDelete}
+                canManage={canManage}
                 empty={
                   <EmptyState
                     icon={<ClipboardX className="h-5 w-5" />}
