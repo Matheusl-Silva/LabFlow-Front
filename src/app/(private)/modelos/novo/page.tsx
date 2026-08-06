@@ -8,7 +8,6 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { ModeloForm } from "@/features/modelos/components/ModeloForm";
-import { useAuth } from "@/providers/AuthProvider";
 import {
   useCreateExamTemplate,
   useExamTemplatesQuery,
@@ -18,23 +17,9 @@ import { routes } from "@/constants/routes";
 
 export default function NovoModeloPage() {
   const router = useRouter();
-  const { session } = useAuth();
   const createMutation = useCreateExamTemplate();
   const { data: modelos = [] } = useExamTemplatesQuery();
 
-  if (!session?.user.admin) {
-    return (
-      <EmptyState
-        title="Acesso restrito"
-        description="Somente administradores podem criar modelos de exame."
-        action={
-          <Button asChild variant="outline">
-            <Link href={routes.dashboard}>Voltar ao início</Link>
-          </Button>
-        }
-      />
-    );
-  }
 
   return (
     <div className="space-y-6">

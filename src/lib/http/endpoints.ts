@@ -34,6 +34,13 @@ export const endpoints = {
     /** Lista de logs de auditoria. Admin-only no backend. */
     base: "/audit-log",
   },
+  estoque: {
+    /** Itens do estoque. Leitura: qualquer usuário. Cadastro/edição: admin. */
+    base: "/stock",
+    byId: (id: number | string) => `/stock/${id}`,
+    /** Entrada/saída de quantidade (delta). Liberado ao usuário comum. */
+    quantidade: (id: number | string) => `/stock/${id}/quantity`,
+  },
   settings: {
     /** Configurações do laudo (logo + rodapé). GET: qualquer usuário. */
     base: "/settings",

@@ -1,6 +1,6 @@
 import { httpClient } from "@/lib/http/client";
 import { endpoints } from "@/lib/http/endpoints";
-import type { Usuario, UsuarioInput } from "@/types";
+import type { Role, Usuario, UsuarioInput } from "@/types";
 import type { UsuarioRepository } from "./usuario.repository";
 
 interface UserApi {
@@ -9,15 +9,18 @@ interface UserApi {
   email: string;
   isAdmin: boolean;
   isActive: boolean;
+  roles?: Role[];
 }
 
 function toDomain(u: UserApi): Usuario {
+  const roles = u.roles ?? (u.isAdmin ? (["ADMIN"] as Role[]) : []);
   return {
     id: u.id,
     nome: u.name,
     email: u.email,
-    admin: u.isAdmin,
+    admin: roles.includes("ADMIN"),
     ativo: u.isActive,
+    roles,
   };
 }
 
@@ -33,22 +36,24 @@ export const httpUsuarioRepository: UsuarioRepository = {
   },
 
   async create(input) {
-    // Criação por admin: endpoint dedicado que já cria o usuário ativo e define
-    // isAdmin numa única requisição (não passa pelo /auth/signup público).
+    // Criação por admin: endpoint dedicado que já cria o usuário ativo e
+    // concede os papéis numa única requisição (não passa pelo /auth/signup).
     const { data } = await httpClient.post<UserApi>(endpoints.usuarios.base, {
       name: input.nome,
       email: input.email,
       pass: input.senha,
-      isAdmin: input.admin,
+      roles: input.roles,
     });
     return data.id;
   },
 
   async update(id, input) {
+    // `roles` substitui a lista inteira no backend: o que não for enviado é
+    // revogado. Por isso mandamos sempre o conjunto completo do formulário.
     const body: Record<string, unknown> = {
       name: input.nome,
       email: input.email,
-      isAdmin: input.admin,
+      roles: input.roles,
     };
     if (input.senha) body.pass = input.senha;
     await httpClient.put(endpoints.usuarios.byId(id), body);
@@ -56,6 +61,12 @@ export const httpUsuarioRepository: UsuarioRepository = {
 
   async setAtivo(id, ativo) {
     await httpClient.put(endpoints.usuarios.byId(id), { isActive: ativo });
+  },
+
+  async aprovar(id, roles) {
+    // Um PUT só: aprovar a conta sem conceder papel deixaria a pessoa entrando
+    // no sistema e tomando 403 em todas as telas.
+    await httpClient.put(endpoints.usuarios.byId(id), { isActive: true, roles });
   },
 
   async remove(id) {

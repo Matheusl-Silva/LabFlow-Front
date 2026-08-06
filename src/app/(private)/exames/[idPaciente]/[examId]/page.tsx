@@ -23,8 +23,9 @@ export default function VisualizarExameDinamicoPage() {
   const idPaciente = params?.idPaciente;
   const examId = params?.examId;
 
-  const { session } = useAuth();
-  const isAdmin = !!session?.user.admin;
+  const { has } = useAuth();
+  // Editar exame já lançado é do papel EXAM_TEMPLATES.
+  const canManage = has("EXAM_TEMPLATES");
 
   const { data: paciente, isLoading: loadingPac } = usePacienteQuery(idPaciente);
   const { data: exam, isLoading: loadingExam, isError: examError } = useExamQuery(examId);
@@ -90,7 +91,7 @@ export default function VisualizarExameDinamicoPage() {
                   Voltar
                 </Link>
               </Button>
-              {isAdmin && (
+              {canManage && (
                 <Button asChild variant="outline">
                   <Link href={`${routes.exames}/${idPaciente}/${exam.id}/editar`}>
                     <Pencil className="h-4 w-4" />

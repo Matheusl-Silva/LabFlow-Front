@@ -21,8 +21,6 @@ import { routes } from "@/constants/routes";
 import type { ExamTemplate } from "@/types";
 
 export default function ModelosPage() {
-  const { session } = useAuth();
-  const isAdmin = !!session?.user.admin;
 
   /**
    * `GET /template` traz só os modelos ativos — que é exatamente a versão
@@ -39,20 +37,6 @@ export default function ModelosPage() {
     [query.data],
   );
 
-  if (!isAdmin) {
-    return (
-      <EmptyState
-        icon={<FileStack className="h-5 w-5" />}
-        title="Acesso restrito"
-        description="Somente administradores podem gerenciar os modelos de exame."
-        action={
-          <Button asChild variant="outline">
-            <Link href={routes.dashboard}>Voltar ao início</Link>
-          </Button>
-        }
-      />
-    );
-  }
 
   async function handleDelete() {
     if (!toDelete) return;

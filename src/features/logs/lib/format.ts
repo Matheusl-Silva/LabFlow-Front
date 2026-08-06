@@ -1,15 +1,22 @@
 import type { AuditAction, AuditEntity } from "@/types";
 
+/**
+ * "Movimentou" (entrada/saída de estoque) é separado de "Editou" de propósito:
+ * quem lê o histórico precisa distinguir a operação do dia a dia de uma
+ * alteração no cadastro do item.
+ */
 export const ACTION_LABEL: Record<AuditAction, string> = {
   CREATE: "Criou",
   UPDATE: "Editou",
   DELETE: "Excluiu",
+  ADJUST: "Movimentou",
 };
 
 export const ACTION_BADGE: Record<AuditAction, string> = {
   CREATE: "bg-emerald-100 text-emerald-800",
   UPDATE: "bg-amber-100 text-amber-800",
   DELETE: "bg-red-100 text-red-800",
+  ADJUST: "bg-sky-100 text-sky-800",
 };
 
 export const ENTITY_LABEL: Record<AuditEntity, string> = {
@@ -17,6 +24,8 @@ export const ENTITY_LABEL: Record<AuditEntity, string> = {
   exam_template: "Modelo de exame",
   patient: "Paciente",
   anamnesis: "Anamnese",
+  stock_item: "Item de estoque",
+  user: "Usuário",
 };
 
 /**
@@ -73,6 +82,15 @@ export const FIELD_LABEL: Record<string, string> = {
   healthCenter: "Posto de saúde",
   familyDisease: "Doença familiar",
   familyDiseaseTreatment: "Tratamento de doença familiar",
+  // Item de estoque
+  type: "Tipo",
+  unit: "Unidade",
+  quantity: "Quantidade",
+  minQuantity: "Estoque mínimo",
+  description: "Observações",
+  // Usuário
+  roles: "Perfis de acesso",
+  isActive: "Conta ativa",
 };
 
 export function fieldLabel(field: string): string {

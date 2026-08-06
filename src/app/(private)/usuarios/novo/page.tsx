@@ -16,10 +16,10 @@ import { routes } from "@/constants/routes";
 
 export default function NovoUsuarioPage() {
   const router = useRouter();
-  const { session } = useAuth();
+  const { isAdmin } = useAuth();
   const createMutation = useCreateUsuario();
 
-  if (!session?.user.admin) {
+  if (!isAdmin) {
     return (
       <EmptyState
         title="Acesso restrito"

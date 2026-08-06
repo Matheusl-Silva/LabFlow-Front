@@ -12,7 +12,6 @@ import { EmptyState } from "@/components/feedback/EmptyState";
 import { ConfirmDialog } from "@/components/modals/ConfirmDialog";
 import { ModeloForm } from "@/features/modelos/components/ModeloForm";
 import { schemaEquals } from "@/features/modelos/lib/schema";
-import { useAuth } from "@/providers/AuthProvider";
 import {
   useCreateExamTemplateVersion,
   useDeleteExamTemplate,
@@ -27,23 +26,9 @@ import { schemaToDraft, type ExamTemplate, type ExamTemplateSchema } from "@/typ
 export default function ModeloDetalhePage() {
   const params = useParams<{ id: string }>();
   const id = params?.id;
-  const { session } = useAuth();
 
   const { data: modelo, isLoading, isError } = useExamTemplateQuery(id);
 
-  if (!session?.user.admin) {
-    return (
-      <EmptyState
-        title="Acesso restrito"
-        description="Somente administradores podem gerenciar modelos de exame."
-        action={
-          <Button asChild variant="outline">
-            <Link href={routes.dashboard}>Voltar ao início</Link>
-          </Button>
-        }
-      />
-    );
-  }
 
   if (isLoading) return <LoadingState label="Carregando modelo…" />;
 

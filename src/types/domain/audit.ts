@@ -1,5 +1,12 @@
-export type AuditAction = "CREATE" | "UPDATE" | "DELETE";
-export type AuditEntity = "exam" | "exam_template" | "patient" | "anamnesis";
+/** `ADJUST` é a movimentação de estoque — separada do `UPDATE` (edição). */
+export type AuditAction = "CREATE" | "UPDATE" | "DELETE" | "ADJUST";
+export type AuditEntity =
+  | "exam"
+  | "exam_template"
+  | "patient"
+  | "anamnesis"
+  | "stock_item"
+  | "user";
 
 export interface AuditLog {
   id: number;
@@ -7,8 +14,12 @@ export interface AuditLog {
   entity: AuditEntity;
   entityId: number;
   userId: number;
-  /** Opcional: só vem se o backend fizer o join (Passo 9 do guia backend). */
-  userName?: string;
+  /**
+   * Nome de quem fez a ação, resolvido pela API (inclusive para usuários já
+   * excluídos). Anulável: só fica nulo se o registro do autor não existir mais
+   * nem como exclusão lógica.
+   */
+  userName?: string | null;
   before: Record<string, unknown> | null;
   after: Record<string, unknown> | null;
   createdAt: string;

@@ -13,12 +13,14 @@ import {
   type UsuarioEditInput,
   type UsuarioEditOutput,
 } from "@/schemas/usuario.schema";
-import type { Usuario, UsuarioInput } from "@/types";
+import type { Role, Usuario, UsuarioInput } from "@/types";
 import { PasswordToggle } from "./PasswordToggle";
-import { AdminToggle } from "./AdminToggle";
+import { RolesPicker } from "./RolesPicker";
 
 interface UsuarioEditFormProps {
   initial: Usuario;
+  /** Ultimo admin ativo: a API recusaria remover o papel, entao travamos aqui. */
+  lockAdmin?: boolean;
   submitLabel?: string;
   onSubmit: (data: UsuarioInput) => Promise<void> | void;
   onCancel?: () => void;
@@ -26,6 +28,7 @@ interface UsuarioEditFormProps {
 
 export function UsuarioEditForm({
   initial,
+  lockAdmin = false,
   submitLabel = "Salvar alterações",
   onSubmit,
   onCancel,
@@ -43,7 +46,7 @@ export function UsuarioEditForm({
       nome: initial.nome,
       email: initial.email,
       senha: "",
-      admin: initial.admin,
+      roles: initial.roles,
     },
   });
 
@@ -52,7 +55,7 @@ export function UsuarioEditForm({
       nome: values.nome,
       email: values.email,
       senha: values.senha?.trim() ? values.senha : undefined,
-      admin: values.admin,
+      roles: values.roles as Role[],
     });
   }
 
@@ -93,12 +96,16 @@ export function UsuarioEditForm({
       </FormField>
 
       <div className="space-y-1.5">
-        <Label>Permissão</Label>
+        <Label>Perfis de acesso</Label>
         <Controller
           control={control}
-          name="admin"
+          name="roles"
           render={({ field }) => (
-            <AdminToggle value={!!field.value} onChange={field.onChange} />
+            <RolesPicker
+              value={(field.value ?? []) as Role[]}
+              onChange={field.onChange}
+              lockAdmin={lockAdmin}
+            />
           )}
         />
       </div>

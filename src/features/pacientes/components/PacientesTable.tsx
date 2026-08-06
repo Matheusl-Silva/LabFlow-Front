@@ -11,19 +11,24 @@ import { nomePaciente, type Paciente } from "@/types";
 interface PacientesTableProps {
   pacientes: Paciente[];
   empty: React.ReactNode;
-  isAdmin: boolean;
+  /** Papel PATIENTS: recebe o cadastro completo e pode editar/excluir. */
+  podeGerenciar: boolean;
+  /** Papel EXAMS/EXAM_TEMPLATES: pode entrar na área de exames do paciente. */
+  podeVerExames: boolean;
   onDelete: (paciente: Paciente) => void;
 }
 
 /**
  * As colunas mudam por perfil porque o payload muda: a API só envia os dados
- * pessoais (nome, e-mail, CPF, telefone, nascimento) para administradores.
- * Mostrar essas colunas para um usuário comum renderizaria uma fileira de "—".
+ * pessoais (nome, e-mail, CPF, telefone, nascimento) para quem tem o papel
+ * PATIENTS. Mostrar essas colunas para quem só tem EXAMS renderizaria uma
+ * fileira de "—".
  */
 export function PacientesTable({
   pacientes,
   empty,
-  isAdmin,
+  podeGerenciar,
+  podeVerExames,
   onDelete,
 }: PacientesTableProps) {
   const idColumn: Column<Paciente> = {
@@ -42,7 +47,7 @@ export function PacientesTable({
     ),
   };
 
-  const adminColumns: Column<Paciente>[] = [
+  const fullColumns: Column<Paciente>[] = [
     idColumn,
     {
       key: "nome",
@@ -89,7 +94,26 @@ export function PacientesTable({
     },
   ];
 
-  const commonColumns: Column<Paciente>[] = [
+  // Sem papel de exames a coluna some inteira (e não só o botão): quem faz
+  // apenas anamnese cairia no "Acesso restrito" do layout de /exames.
+  const examesColumn: Column<Paciente> = {
+    key: "acoes",
+    header: <span className="sr-only">Ações</span>,
+    headerClassName: "text-right",
+    className: "text-right",
+    cell: (p) => (
+      <div className="flex justify-end">
+        <Button asChild variant="ghost" size="sm">
+          <Link href={`${routes.exames}/${p.id}`}>
+            <FlaskConical className="h-4 w-4" />
+            Exames
+          </Link>
+        </Button>
+      </div>
+    ),
+  };
+
+  const anonymizedColumns: Column<Paciente>[] = [
     idColumn,
     periodoColumn,
     {
@@ -97,22 +121,7 @@ export function PacientesTable({
       header: "Cadastrado em",
       cell: (p) => formatDate(p.criadoEm),
     },
-    {
-      key: "acoes",
-      header: <span className="sr-only">Ações</span>,
-      headerClassName: "text-right",
-      className: "text-right",
-      cell: (p) => (
-        <div className="flex justify-end">
-          <Button asChild variant="ghost" size="sm">
-            <Link href={`${routes.exames}/${p.id}`}>
-              <FlaskConical className="h-4 w-4" />
-              Exames
-            </Link>
-          </Button>
-        </div>
-      ),
-    },
+    ...(podeVerExames ? [examesColumn] : []),
   ];
 
   // Ordem alfabética pelo nome. Cópia para não mutar o array recebido por prop.
@@ -122,7 +131,7 @@ export function PacientesTable({
 
   return (
     <DataTable
-      columns={isAdmin ? adminColumns : commonColumns}
+      columns={podeGerenciar ? fullColumns : anonymizedColumns}
       data={pacientesOrdenados}
       rowKey={(p) => p.id}
       empty={empty}

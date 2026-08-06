@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Activity,
+  Boxes,
   LayoutDashboard,
   Users,
   UserCog,
@@ -17,16 +18,28 @@ import {
 import { cn } from "@/lib/utils";
 import { routes } from "@/constants/routes";
 import { useAuth } from "@/providers/AuthProvider";
+import type { Role } from "@/types";
 
-const nav = [
-  { href: routes.dashboard, label: "Home", icon: LayoutDashboard, adminOnly: false },
-  { href: routes.pacientes, label: "Pacientes", icon: Users, adminOnly: false },
-  { href: routes.usuarios, label: "Usuários", icon: UserCog, adminOnly: true },
-  { href: routes.exames, label: "Exames", icon: FlaskConical, adminOnly: false },
-  { href: routes.modelos, label: "Modelos de exame", icon: FileStack, adminOnly: true },
-  { href: routes.anamneses, label: "Anamneses", icon: ClipboardList, adminOnly: true },
-  { href: routes.logs, label: "Histórico", icon: History, adminOnly: true },
-  { href: routes.configuracoes, label: "Configurações", icon: Settings, adminOnly: true },
+/**
+ * `roles: []` = área de administração do sistema, visível só para o admin.
+ * Nos demais itens, basta ter UM dos papéis listados (o ADMIN passa em todos).
+ */
+const nav: {
+  href: string;
+  label: string;
+  icon: typeof LayoutDashboard;
+  roles: Role[];
+  adminOnly?: boolean;
+}[] = [
+  { href: routes.dashboard, label: "Home", icon: LayoutDashboard, roles: [], adminOnly: false },
+  { href: routes.pacientes, label: "Pacientes", icon: Users, roles: ["PATIENTS", "EXAMS", "EXAM_TEMPLATES", "ANAMNESIS"] },
+  { href: routes.usuarios, label: "Usuários", icon: UserCog, roles: [], adminOnly: true },
+  { href: routes.exames, label: "Exames", icon: FlaskConical, roles: ["EXAMS", "EXAM_TEMPLATES"] },
+  { href: routes.modelos, label: "Modelos de exame", icon: FileStack, roles: ["EXAM_TEMPLATES"] },
+  { href: routes.anamneses, label: "Anamneses", icon: ClipboardList, roles: ["ANAMNESIS"] },
+  { href: routes.estoque, label: "Estoque", icon: Boxes, roles: ["STOCK"] },
+  { href: routes.logs, label: "Histórico", icon: History, roles: [], adminOnly: true },
+  { href: routes.configuracoes, label: "Configurações", icon: Settings, roles: [], adminOnly: true },
 ];
 
 interface SidebarProps {
@@ -36,9 +49,14 @@ interface SidebarProps {
 
 export function Sidebar({ open, onClose }: SidebarProps) {
   const pathname = usePathname();
-  const { session } = useAuth();
-  const isAdmin = !!session?.user.admin;
-  const items = nav.filter((item) => !item.adminOnly || isAdmin);
+  const { has, isAdmin } = useAuth();
+  // Home fica para todos (roles vazio, adminOnly false); as áreas de sistema
+  // exigem admin; o resto exige pelo menos um dos papéis do item.
+  const items = nav.filter((item) => {
+    if (item.adminOnly) return isAdmin;
+    if (item.roles.length === 0) return true;
+    return item.roles.some(has);
+  });
 
   return (
     <>

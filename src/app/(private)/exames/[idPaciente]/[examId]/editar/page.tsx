@@ -12,7 +12,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { FormField } from "@/components/forms/FormField";
 import { LoadingState } from "@/components/feedback/LoadingState";
 import { EmptyState } from "@/components/feedback/EmptyState";
-import { useAuth } from "@/providers/AuthProvider";
 import { usePacienteQuery } from "@/hooks/usePacientes";
 import { useUsuariosQuery } from "@/hooks/useUsuarios";
 import { useExamQuery, useExamsByPatientQuery, useUpdateExam } from "@/hooks/useExam";
@@ -67,9 +66,6 @@ export default function EditarExameDinamicoPage() {
   const idPaciente = params?.idPaciente;
   const examId = params?.examId;
 
-  const { session } = useAuth();
-  const isAdmin = !!session?.user.admin;
-
   const { data: paciente, isLoading: loadingPac, isError: pacError } =
     usePacienteQuery(idPaciente);
   const { data: usuarios = [], isLoading: loadingUsuarios } = useUsuariosQuery();
@@ -79,24 +75,6 @@ export default function EditarExameDinamicoPage() {
   // pela tela anterior) traz. Só o usamos no título.
   const { data: exames } = useExamsByPatientQuery(idPaciente);
   const updateMutation = useUpdateExam(idPaciente ?? "");
-
-  // Editar exame é admin-only (PUT /exam/:id não é liberado para usuário comum).
-  if (!isAdmin) {
-    return (
-      <EmptyState
-        title="Acesso restrito"
-        description="Apenas administradores podem editar exames."
-        action={
-          <Button asChild variant="outline">
-            <Link href={`${routes.exames}/${idPaciente}`}>
-              <ArrowLeft className="h-4 w-4" />
-              Voltar
-            </Link>
-          </Button>
-        }
-      />
-    );
-  }
 
   if (loadingPac || loadingUsuarios || loadingExam) {
     return <LoadingState label="Carregando exame…" />;

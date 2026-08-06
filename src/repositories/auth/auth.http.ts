@@ -1,6 +1,6 @@
 import { httpClient } from "@/lib/http/client";
 import { endpoints } from "@/lib/http/endpoints";
-import type { Usuario } from "@/types";
+import type { Role, Usuario } from "@/types";
 import type { AuthRepository, LoginPayload, RegisterPayload } from "./auth.repository";
 
 interface UserApi {
@@ -9,15 +9,21 @@ interface UserApi {
   email: string;
   isAdmin: boolean;
   isActive: boolean;
+  roles?: Role[];
 }
 
 function toDomain(u: UserApi): Usuario {
+  // Fallback para uma API ainda sem papéis: um admin vira ["ADMIN"], os demais
+  // ficam sem papel. Evita que um front novo contra um back antigo monte uma
+  // sessão em que `roles` é undefined e todo `has()` explode.
+  const roles = u.roles ?? (u.isAdmin ? (["ADMIN"] as Role[]) : []);
   return {
     id: u.id,
     nome: u.name,
     email: u.email,
-    admin: u.isAdmin,
+    admin: roles.includes("ADMIN"),
     ativo: u.isActive,
+    roles,
   };
 }
 

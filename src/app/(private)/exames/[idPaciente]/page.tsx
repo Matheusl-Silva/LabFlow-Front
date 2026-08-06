@@ -25,8 +25,10 @@ import { HistoricoExamesTable } from "@/features/exames/components/HistoricoExam
 export default function HistoricoExamesPage() {
   const params = useParams<{ idPaciente: string }>();
   const id = params?.idPaciente;
-  const { session } = useAuth();
-  const isAdmin = !!session?.user.admin;
+
+  const { has } = useAuth();
+  // Editar e excluir exame já lançado são do papel EXAM_TEMPLATES.
+  const canManage = has("EXAM_TEMPLATES");
 
   const pacienteQuery = usePacienteQuery(id);
   const examesQuery = useExamsByPatientQuery(id);
@@ -79,14 +81,12 @@ export default function HistoricoExamesPage() {
                 Voltar
               </Link>
             </Button>
-            {isAdmin && (
-              <Button asChild variant="outline">
-                <Link href={`${routes.anamneses}/${paciente.id}`}>
-                  <ClipboardList className="h-4 w-4" />
-                  Anamneses
-                </Link>
-              </Button>
-            )}
+            <Button asChild variant="outline">
+              <Link href={`${routes.anamneses}/${paciente.id}`}>
+                <ClipboardList className="h-4 w-4" />
+                Anamneses
+              </Link>
+            </Button>
             <Button asChild>
               <Link href={`${routes.exames}/${paciente.id}/selecionar`}>
                 <Plus className="h-4 w-4" />
@@ -123,8 +123,8 @@ export default function HistoricoExamesPage() {
               <HistoricoExamesTable
                 idPaciente={paciente.id}
                 exames={exames}
-                isAdmin={isAdmin}
                 onDelete={setToDelete}
+                canManage={canManage}
                 empty={
                   <EmptyState
                     icon={<ClipboardX className="h-5 w-5" />}

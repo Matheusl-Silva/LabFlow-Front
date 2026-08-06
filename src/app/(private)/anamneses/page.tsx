@@ -14,7 +14,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { RequireAdmin } from "@/components/feedback/RequireAdmin";
 import { pacienteService } from "@/services/paciente.service";
 import { isApiError } from "@/lib/http/errors";
 import { routes } from "@/constants/routes";
@@ -43,7 +42,6 @@ export default function AnamnesesHubPage() {
   }
 
   return (
-    <RequireAdmin>
       <div className="space-y-8">
         <PageHeader
           title="Anamnese de enfermagem"
@@ -92,6 +90,5 @@ export default function AnamnesesHubPage() {
           </CardContent>
         </Card>
       </div>
-    </RequireAdmin>
   );
 }

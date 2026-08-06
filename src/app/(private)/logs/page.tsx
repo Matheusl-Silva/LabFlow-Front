@@ -18,15 +18,15 @@ import { LogsFilters } from "@/features/logs/components/LogsFilters";
 import { LogDiffDialog } from "@/features/logs/components/LogDiffDialog";
 
 export default function LogsPage() {
-  const { session } = useAuth();
-  const isAdmin = !!session?.user.admin;
+  const { session, isAdmin } = useAuth();
 
   const [filters, setFilters] = useState<AuditLogFilters>({ page: 1, limit: 20 });
   const [inspecting, setInspecting] = useState<AuditLog | null>(null);
 
   const query = useAuditLogsQuery(filters, isAdmin);
 
-  // Resolve nome do usuário no cliente (opção 2 do guia backend).
+  // A API já manda `userName` em cada evento. Esta lista serve ao filtro por
+  // usuário e, de quebra, cobre uma API antiga que ainda não faça o join.
   const usuariosQuery = useUsuariosQuery(isAdmin);
   const userName = (id: number) =>
     usuariosQuery.data?.find((u) => u.id === id)?.nome;

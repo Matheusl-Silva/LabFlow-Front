@@ -15,10 +15,11 @@ const KEYS = {
   detail: (id: number | string) => [...KEYS.all, "detail", String(id)] as const,
 };
 
-export function usePacientesQuery(): UseQueryResult<Paciente[], Error> {
+export function usePacientesQuery(enabled = true): UseQueryResult<Paciente[], Error> {
   return useQuery({
     queryKey: KEYS.list(),
     queryFn: () => pacienteService.listar(),
+    enabled,
   });
 }
 
