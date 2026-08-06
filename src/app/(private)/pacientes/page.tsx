@@ -31,6 +31,9 @@ export default function PacientesPage() {
   // so com EXAMS recebe a listagem anonimizada da API, sem acoes de escrita.
   const { has } = useAuth();
   const podeGerenciar = has("PATIENTS");
+  // Mesma regra do layout de /exames: lançar (EXAMS) ou gerenciar
+  // (EXAM_TEMPLATES). Sem um dos dois o atalho para exames nem aparece.
+  const podeVerExames = has("EXAMS") || has("EXAM_TEMPLATES");
 
   const query = usePacientesQuery();
   const deleteMutation = useDeletePaciente();
@@ -106,6 +109,7 @@ export default function PacientesPage() {
               filterPacientes(data, { search, periodo }),
             )}
             podeGerenciar={podeGerenciar}
+            podeVerExames={podeVerExames}
             onDelete={setToDelete}
             empty={
               <EmptyState
