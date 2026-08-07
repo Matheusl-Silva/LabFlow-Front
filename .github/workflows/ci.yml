@@ -4,6 +4,9 @@ on:
   push:
   pull_request:
     branches: [main]
+  # Permite rodar a pipeline manualmente. Serve de escape quando o GitHub não
+  # entrega o evento de push (já aconteceu: merge na main sem run nenhum).
+  workflow_dispatch:
 
 jobs:
   build-e-smoke:
@@ -85,9 +88,12 @@ jobs:
     runs-on: ubuntu-latest
 
     # Só versiona depois que typecheck, build e smoke test passaram, e apenas
-    # em push direto na main — PR não deve criar release nem tag.
+    # na main — PR não deve criar release nem tag. O disparo manual entra aqui
+    # para conseguir reexecutar um push que o GitHub não entregou.
     needs: build-e-smoke
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
 
     permissions:
       contents: write # criar a tag git e o release
