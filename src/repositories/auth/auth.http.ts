@@ -50,4 +50,11 @@ export const httpAuthRepository: AuthRepository = {
   async register(payload: RegisterPayload): Promise<void> {
     await httpClient.post(endpoints.auth.register, payload);
   },
+
+  async logout(): Promise<void> {
+    // Sem corpo: o servidor identifica a sessão pelo cookie httpOnly. Derrubar
+    // a cadeia de renovações no servidor é o que impede um cookie copiado de
+    // continuar valendo depois que o usuário saiu.
+    await httpClient.post(endpoints.auth.logout);
+  },
 };

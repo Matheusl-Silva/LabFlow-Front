@@ -26,8 +26,16 @@ export const authService = {
     });
   },
 
-  logout(): void {
+  async logout(): Promise<void> {
+    // Limpa o local ANTES de falar com a API: sair da conta não pode depender
+    // de a rede responder. O cookie httpOnly, esse só o servidor apaga.
     clearStoredSession();
+    try {
+      await authRepository.logout();
+    } catch {
+      // Sessão já inválida ou API fora — o usuário saiu do mesmo jeito, e o
+      // refresh restante expira sozinho.
+    }
   },
 
   getSession(): AuthSession | null {

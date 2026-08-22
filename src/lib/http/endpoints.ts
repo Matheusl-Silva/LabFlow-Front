@@ -2,6 +2,10 @@ export const endpoints = {
   auth: {
     login: "/auth/signin",
     register: "/auth/signup",
+    /** Renova o access token a partir do cookie httpOnly. Sem corpo. */
+    refresh: "/auth/refresh",
+    /** Revoga a sessão no servidor e apaga o cookie. */
+    logout: "/auth/logout",
   },
   usuarios: {
     base: "/user",

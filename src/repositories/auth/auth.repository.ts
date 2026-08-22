@@ -14,4 +14,6 @@ export interface RegisterPayload {
 export interface AuthRepository {
   login(payload: LoginPayload): Promise<{ user: Usuario; token: string }>;
   register(payload: RegisterPayload): Promise<void>;
+  /** Revoga a sessão no servidor e apaga o cookie de refresh. */
+  logout(): Promise<void>;
 }
