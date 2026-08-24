@@ -27,27 +27,27 @@ function toDomain(u: UserApi): Usuario {
   };
 }
 
-function decodeJwtPayload(token: string): { sub: number; isAdmin: boolean } {
-  // JWT usa base64url (`-`/`_`); atob espera base64 padrão. Sem essa conversão,
-  // payloads com esses caracteres quebram de forma intermitente.
-  const base64 = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
-  return JSON.parse(atob(base64)) as { sub: number; isAdmin: boolean };
-}
-
 export const httpAuthRepository: AuthRepository = {
-  async login(payload: LoginPayload): Promise<{ user: Usuario; token: string }> {
-    const { data } = await httpClient.post<{ token: string }>(endpoints.auth.login, {
-      email: payload.email,
-      pass: payload.pass,
-    });
-    const { sub } = decodeJwtPayload(data.token);
-    const { data: userApi } = await httpClient.get<UserApi>(endpoints.usuarios.byId(sub), {
-      headers: { Authorization: `Bearer ${data.token}` },
-    });
-    return { user: toDomain(userApi), token: data.token };
+  async login(payload: LoginPayload): Promise<Usuario> {
+    // A resposta não traz token: o access e o refresh chegam como cookies
+    // httpOnly. O perfil vem no corpo porque a página não tem mais como
+    // descobri-lo sozinha — antes ela decodificava o `sub` do JWT e fazia um
+    // GET /user/:id atrás disso.
+    const { data } = await httpClient.post<{ user: UserApi }>(
+      endpoints.auth.login,
+      { email: payload.email, pass: payload.pass },
+    );
+    return toDomain(data.user);
   },
 
   async register(payload: RegisterPayload): Promise<void> {
     await httpClient.post(endpoints.auth.register, payload);
+  },
+
+  async logout(): Promise<void> {
+    // Sem corpo: o servidor identifica a sessão pelo cookie httpOnly. Derrubar
+    // a cadeia de renovações no servidor é o que impede um cookie copiado de
+    // continuar valendo depois que o usuário saiu.
+    await httpClient.post(endpoints.auth.logout);
   },
 };

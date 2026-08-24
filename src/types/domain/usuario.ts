@@ -62,9 +62,15 @@ export interface UsuarioInput {
   roles: Role[];
 }
 
+/**
+ * O que a aplicação sabe sobre quem está logado. NÃO guarda token: desde a
+ * migração para cookies httpOnly, tanto o access quanto o refresh vivem fora
+ * do alcance do JavaScript — o navegador os anexa sozinho a cada requisição.
+ * Aqui fica só o perfil, que a interface precisa para exibir nome e decidir
+ * menus; quem autoriza de fato continua sendo a API.
+ */
 export interface AuthSession {
   user: Usuario;
-  token: string;
 }
 
 /**

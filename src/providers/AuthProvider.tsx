@@ -10,6 +10,8 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import { authService } from "@/services/auth.service";
+import { onSessionExpired } from "@/lib/auth/session";
+import { routes } from "@/constants/routes";
 import { temPapel, type AuthSession, type Role } from "@/types";
 import type { LoginInput } from "@/schemas/auth.schema";
 
@@ -22,7 +24,7 @@ interface AuthContextValue {
   /** Poder administrativo: usuários, histórico, configurações. */
   isAdmin: boolean;
   login: (input: LoginInput) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -37,15 +39,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(false);
   }, []);
 
+  // A renovação automática do token acontece no interceptor do axios, fora do
+  // React. Quando ela falha de vez, é este efeito que derruba a sessão da
+  // árvore — sem ele a tela continuaria "logada" enquanto toda requisição toma
+  // 401, que era exatamente o comportamento antigo do token expirado.
+  useEffect(() => {
+    return onSessionExpired(() => {
+      setSession(null);
+      router.replace(routes.login);
+    });
+  }, [router]);
+
   const login = useCallback(async (input: LoginInput) => {
     const next = await authService.login(input);
     setSession(next);
   }, []);
 
-  const logout = useCallback(() => {
-    authService.logout();
+  const logout = useCallback(async () => {
+    // Estado local primeiro: a tela sai da sessão na hora, mesmo que a revogação
+    // no servidor demore ou falhe.
     setSession(null);
-    router.replace("/login");
+    router.replace(routes.login);
+    await authService.logout();
   }, [router]);
 
   const value = useMemo<AuthContextValue>(

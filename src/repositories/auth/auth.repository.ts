@@ -12,6 +12,12 @@ export interface RegisterPayload {
 }
 
 export interface AuthRepository {
-  login(payload: LoginPayload): Promise<{ user: Usuario; token: string }>;
+  /**
+   * Devolve só o usuário: os tokens da sessão chegam em cookies httpOnly e
+   * nunca passam pelo JavaScript.
+   */
+  login(payload: LoginPayload): Promise<Usuario>;
   register(payload: RegisterPayload): Promise<void>;
+  /** Revoga a sessão no servidor e apaga os cookies de sessão. */
+  logout(): Promise<void>;
 }
