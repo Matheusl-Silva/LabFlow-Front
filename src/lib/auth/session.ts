@@ -1,5 +1,16 @@
 import type { AuthSession } from "@/types";
 
+/**
+ * Perfil do usuário logado — e SÓ o perfil. Os tokens ficam em cookies
+ * httpOnly emitidos pela API (`labflow_access` e `labflow_refresh`), fora do
+ * alcance de qualquer script da página; guardar o access aqui, como era antes,
+ * entregava a sessão inteira a um eventual XSS.
+ *
+ * O que sobrou neste storage não é credencial: é cache de exibição (nome,
+ * papéis) para a tela montar sem esperar uma requisição. Adulterá-lo muda o
+ * menu que aparece, nunca o que a API deixa fazer — quem autoriza é o token do
+ * cookie, que o navegador não deixa ninguém forjar daqui.
+ */
 const STORAGE_KEY = "labflow_session";
 
 export function getStoredSession(): AuthSession | null {
@@ -20,22 +31,6 @@ export function setStoredSession(session: AuthSession): void {
 export function clearStoredSession(): void {
   if (typeof window === "undefined") return;
   window.localStorage.removeItem(STORAGE_KEY);
-}
-
-/**
- * Troca só o access token, preservando o usuário já carregado. É o que a
- * renovação automática grava: refazer o GET /user/:id a cada 15 minutos seria
- * uma requisição a mais para reconstruir um dado que não mudou.
- *
- * Devolve `false` quando não há sessão armazenada — sinal de que outra aba
- * encerrou a sessão. Quem chama precisa saber: gravar em silêncio no vazio
- * faria cada requisição seguinte disparar uma renovação nova, sem fim.
- */
-export function setStoredToken(token: string): boolean {
-  const current = getStoredSession();
-  if (!current) return false;
-  setStoredSession({ ...current, token });
-  return true;
 }
 
 type SessionExpiredListener = () => void;

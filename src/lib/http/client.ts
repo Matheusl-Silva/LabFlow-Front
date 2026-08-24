@@ -5,19 +5,18 @@ import axios, {
 } from "axios";
 import { ApiError, isApiError } from "./errors";
 import { endpoints } from "./endpoints";
-import {
-  getStoredSession,
-  clearStoredSession,
-  setStoredToken,
-  notifySessionExpired,
-} from "@/lib/auth/session";
+import { clearStoredSession, notifySessionExpired } from "@/lib/auth/session";
 
 const baseURL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000";
 
 /**
- * `withCredentials`: o refresh token vive num cookie httpOnly emitido pela API.
- * Sem esta flag o navegador simplesmente não envia esse cookie em requisição
- * cross-origin — e a renovação nunca acharia a sessão.
+ * `withCredentials`: os DOIS tokens da sessão vivem em cookies httpOnly
+ * emitidos pela API — o access em `labflow_access`, o refresh em
+ * `labflow_refresh`. Sem esta flag o navegador simplesmente não os envia em
+ * requisição cross-origin, e toda chamada sairia sem autenticação.
+ *
+ * Não existe interceptor montando `Authorization` aqui: o token não passa mais
+ * pelo JavaScript. Quem o anexa é o navegador, sozinho.
  */
 export const httpClient: AxiosInstance = axios.create({
   baseURL,
@@ -34,20 +33,6 @@ const refreshClient: AxiosInstance = axios.create({
   baseURL,
   timeout: 15_000,
   withCredentials: true,
-});
-
-httpClient.interceptors.request.use((config) => {
-  // Não sobrescreve um Authorization já definido na própria requisição: no
-  // login, o GET /user/:id envia o token recém-emitido explicitamente, e usar
-  // o token (possivelmente expirado) do localStorage aqui causava 401
-  // intermitente que "sumia" ao repetir a requisição.
-  if (typeof window !== "undefined" && !config.headers.Authorization) {
-    const session = getStoredSession();
-    if (session?.token) {
-      config.headers.Authorization = `Bearer ${session.token}`;
-    }
-  }
-  return config;
 });
 
 function paraApiError(
@@ -84,20 +69,17 @@ function encerrarSessao(): void {
  * refresh é rotativo, as quatro últimas apresentariam um token já consumido e
  * a API derrubaria a sessão inteira por suspeita de roubo.
  */
-let refreshInFlight: Promise<string> | null = null;
+let refreshInFlight: Promise<void> | null = null;
 
-function refreshAccessToken(): Promise<string> {
+/**
+ * Não devolve token nenhum, e é esse o ponto: a resposta é 204 e o par novo
+ * chega como `Set-Cookie`. A requisição refeita logo abaixo já sai com o
+ * cookie atualizado sem ninguém precisar tocar em header.
+ */
+function renovarSessao(): Promise<void> {
   refreshInFlight ??= refreshClient
-    .post<{ token: string }>(endpoints.auth.refresh)
-    .then((res) => {
-      // Storage vazio = outra aba encerrou a sessão enquanto esta renovava.
-      // Seguir em frente faria toda requisição seguinte pagar uma renovação
-      // nova, indefinidamente; encerrar aqui é o desfecho honesto.
-      if (!setStoredToken(res.data.token)) {
-        throw new ApiError("Sessão encerrada em outra aba", 401);
-      }
-      return res.data.token;
-    })
+    .post(endpoints.auth.refresh)
+    .then(() => undefined)
     .finally(() => {
       refreshInFlight = null;
     });
@@ -136,11 +118,7 @@ httpClient.interceptors.response.use(
       original.jaRenovou = true;
 
       try {
-        const token = await refreshAccessToken();
-        // Obrigatório sobrescrever: o config guardado carrega o header montado
-        // com o token que acabou de expirar, e o interceptor de request não o
-        // substitui justamente por já existir um Authorization ali.
-        original.headers.set("Authorization", `Bearer ${token}`);
+        await renovarSessao();
       } catch (erroRenovacao) {
         if (ehSessaoEncerrada(erroRenovacao)) encerrarSessao();
         // O chamador recebe o erro da SUA requisição, não o da renovação.
@@ -148,8 +126,9 @@ httpClient.interceptors.response.use(
       }
 
       // Fora do try acima de propósito: uma falha daqui em diante é da
-      // requisição refeita, não da renovação. Só um 401 — o token recém-emitido
-      // já não vale — encerra a sessão; rede fora ou 500 sobem como erro comum.
+      // requisição refeita, não da renovação. Só um 401 — o cookie recém-
+      // emitido já não vale — encerra a sessão; rede fora ou 500 sobem como
+      // erro comum.
       try {
         return await httpClient.request(original);
       } catch (erroRetentativa) {
