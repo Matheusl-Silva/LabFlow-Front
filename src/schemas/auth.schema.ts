@@ -13,6 +13,10 @@ export const loginSchema = z.object({
 const senhaForte = z
   .string()
   .min(8, "A senha deve ter no mínimo 8 caracteres")
+  // O teto tem de estar aqui também, e não só no DTO: sem ele uma passphrase
+  // longa passa no cliente e volta como 400 do servidor — erro de rede no
+  // lugar de uma mensagem embaixo do campo.
+  .max(128, "A senha deve ter no máximo 128 caracteres")
   .regex(/[A-Z]/, "Inclua ao menos uma letra maiúscula")
   .regex(/[0-9]/, "Inclua ao menos um número");
 

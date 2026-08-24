@@ -25,6 +25,13 @@ interface AuthContextValue {
   isAdmin: boolean;
   login: (input: LoginInput) => Promise<void>;
   logout: () => Promise<void>;
+  /**
+   * Esquece a sessão na árvore SEM redirecionar. É o que a redefinição de
+   * senha precisa: o servidor já derrubou tudo, mas a tela de sucesso ainda
+   * tem de aparecer — `logout` mandaria o usuário para o login antes de ele
+   * ler que a senha foi trocada.
+   */
+  clearSession: () => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -55,6 +62,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setSession(next);
   }, []);
 
+  const clearSession = useCallback(() => {
+    setSession(null);
+  }, []);
+
   const logout = useCallback(async () => {
     // Estado local primeiro: a tela sai da sessão na hora, mesmo que a revogação
     // no servidor demore ou falhe.
@@ -72,8 +83,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isAdmin: !!session?.user.admin,
       login,
       logout,
+      clearSession,
     }),
-    [session, isLoading, login, logout],
+    [session, isLoading, login, logout, clearSession],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

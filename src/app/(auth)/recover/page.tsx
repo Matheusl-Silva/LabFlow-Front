@@ -33,9 +33,25 @@ import {
   type ResetPasswordInput,
 } from "@/schemas/auth.schema";
 import { authService } from "@/services/auth.service";
+import { useAuth } from "@/providers/AuthProvider";
 import { isApiError } from "@/lib/http/errors";
 import { routes } from "@/constants/routes";
 import { cn } from "@/lib/utils";
+
+/**
+ * O Nest devolve 400 em dois casos que não têm nada a ver um com o outro:
+ * token recusado (`message` é uma string) e corpo reprovado pelo
+ * ValidationPipe (`message` é um array, uma entrada por regra violada).
+ * Tratar os dois como "link expirado" mandaria o usuário pedir um link novo
+ * por causa de uma senha fora das regras — e o link novo esbarraria no mesmo
+ * erro, sem saída.
+ */
+function errosDeValidacao(err: unknown): string[] | null {
+  if (!isApiError(err)) return null;
+  const payload = err.data as { message?: unknown } | undefined;
+  if (!Array.isArray(payload?.message)) return null;
+  return payload.message.filter((m): m is string => typeof m === "string");
+}
 
 /** Mensagem amigável para as falhas que estas duas telas conseguem produzir. */
 function mensagemDeErro(err: unknown, padrao: string): string {
@@ -45,6 +61,9 @@ function mensagemDeErro(err: unknown, padrao: string): string {
   if (err.status === 429) {
     return "Muitos pedidos seguidos. Aguarde alguns minutos e tente de novo.";
   }
+  // Sem o join, o array vira "a,b" na mensagem do Error.
+  const validacao = errosDeValidacao(err);
+  if (validacao?.length) return validacao.join(". ");
   return err.message || padrao;
 }
 
@@ -185,6 +204,10 @@ function SolicitarForm() {
  * qualquer pessoa trocar a senha de qualquer conta.
  */
 function RedefinirForm({ token }: { token: string }) {
+  // O AuthProvider lê a sessão do storage uma única vez, na montagem. Limpar
+  // só o storage deixaria a árvore se achando autenticada até alguma
+  // requisição tomar 401 — com um piscar de tela privada no meio.
+  const { clearSession } = useAuth();
   const [concluido, setConcluido] = useState(false);
   const [linkInvalido, setLinkInvalido] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -204,13 +227,15 @@ function RedefinirForm({ token }: { token: string }) {
   async function onSubmit(values: ResetPasswordInput) {
     try {
       await authService.resetPassword(token, values);
+      clearSession();
       setConcluido(true);
     } catch (err) {
-      // 400 é o único motivo do backend para recusar o token: inexistente,
-      // vencido, já usado ou de conta inativa. Ele não diz qual — e o usuário
-      // não faria nada diferente conforme o caso, então a saída é a mesma:
-      // pedir um link novo.
-      if (isApiError(err) && err.status === 400) {
+      // Token recusado — inexistente, vencido, já usado ou de conta inativa. A
+      // API não diz qual, e o usuário não faria nada diferente conforme o
+      // caso, então a saída é a mesma: pedir um link novo. Erro de VALIDAÇÃO
+      // também é 400 e não pode cair aqui: o token continua válido, e mandar
+      // pedir outro link seria um beco sem saída.
+      if (isApiError(err) && err.status === 400 && !errosDeValidacao(err)) {
         setLinkInvalido(true);
         return;
       }
