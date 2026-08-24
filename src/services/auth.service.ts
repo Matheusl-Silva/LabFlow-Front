@@ -5,7 +5,11 @@ import {
   getStoredSession,
   setStoredSession,
 } from "@/lib/auth/session";
-import type { LoginInput, RegisterInput } from "@/schemas/auth.schema";
+import type {
+  LoginInput,
+  RegisterInput,
+  ResetPasswordInput,
+} from "@/schemas/auth.schema";
 
 export const authService = {
   async login(input: LoginInput): Promise<AuthSession> {
@@ -24,6 +28,23 @@ export const authService = {
       email: input.email,
       pass: input.senha,
     });
+  },
+
+  /**
+   * Dispara o e-mail com o link. Não devolve nada: a API responde igual para
+   * e-mail cadastrado e não cadastrado, e repassar qualquer diferença para a
+   * tela desfaria essa proteção.
+   */
+  async requestPasswordReset(email: string): Promise<void> {
+    await authRepository.forgotPassword(email);
+  },
+
+  async resetPassword(token: string, input: ResetPasswordInput): Promise<void> {
+    await authRepository.resetPassword({ token, pass: input.senha });
+    // O servidor derrubou TODAS as sessões e apagou o cookie de refresh. A
+    // sessão guardada aqui virou lixo: mantê-la faria a próxima navegação
+    // renderizar como logado e tomar 401 em cada requisição.
+    clearStoredSession();
   },
 
   async logout(): Promise<void> {

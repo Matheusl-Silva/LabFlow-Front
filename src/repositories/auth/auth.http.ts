@@ -1,7 +1,12 @@
 import { httpClient } from "@/lib/http/client";
 import { endpoints } from "@/lib/http/endpoints";
 import type { Role, Usuario } from "@/types";
-import type { AuthRepository, LoginPayload, RegisterPayload } from "./auth.repository";
+import type {
+  AuthRepository,
+  LoginPayload,
+  RegisterPayload,
+  ResetPasswordPayload,
+} from "./auth.repository";
 
 interface UserApi {
   id: number;
@@ -49,6 +54,14 @@ export const httpAuthRepository: AuthRepository = {
 
   async register(payload: RegisterPayload): Promise<void> {
     await httpClient.post(endpoints.auth.register, payload);
+  },
+
+  async forgotPassword(email: string): Promise<void> {
+    await httpClient.post(endpoints.auth.forgotPassword, { email });
+  },
+
+  async resetPassword(payload: ResetPasswordPayload): Promise<void> {
+    await httpClient.post(endpoints.auth.resetPassword, payload);
   },
 
   async logout(): Promise<void> {

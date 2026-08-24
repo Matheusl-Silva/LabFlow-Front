@@ -6,6 +6,10 @@ export const endpoints = {
     refresh: "/auth/refresh",
     /** Revoga a sessão no servidor e apaga o cookie. */
     logout: "/auth/logout",
+    /** Pede o link de redefinição por e-mail. Responde 202 sempre. */
+    forgotPassword: "/auth/forgot-password",
+    /** Troca a senha usando o token do link. Derruba todas as sessões. */
+    resetPassword: "/auth/reset-password",
   },
   usuarios: {
     base: "/user",
