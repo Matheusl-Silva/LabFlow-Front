@@ -13,11 +13,14 @@ import type {
 
 export const authService = {
   async login(input: LoginInput): Promise<AuthSession> {
-    const { user, token } = await authRepository.login({
+    // A API responde gravando os cookies httpOnly da sessão; do corpo só vem o
+    // perfil. Nada de token passa por aqui — e por isso nada de token é
+    // guardado.
+    const user = await authRepository.login({
       email: input.email,
       pass: input.senha,
     });
-    const session: AuthSession = { user, token };
+    const session: AuthSession = { user };
     setStoredSession(session);
     return session;
   },
@@ -49,7 +52,8 @@ export const authService = {
 
   async logout(): Promise<void> {
     // Limpa o local ANTES de falar com a API: sair da conta não pode depender
-    // de a rede responder. O cookie httpOnly, esse só o servidor apaga.
+    // de a rede responder. Os cookies httpOnly, esses só o servidor apaga —
+    // até lá o access ainda vale, e é por isso que a chamada abaixo importa.
     clearStoredSession();
     try {
       await authRepository.logout();

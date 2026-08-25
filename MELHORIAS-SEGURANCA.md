@@ -120,13 +120,24 @@ Arquivos afetados: `signin.dto.ts`, `create-patient.dto.ts`, `create-exam.dto.ts
 
 **Por que não derivei do JWT:** a tela de novo exame (`exames/[idPaciente]/novo`) deixa escolher **responsável** e **preceptor** em dropdowns de todos os usuários — parece intencional (ex.: uma secretária registra em nome do responsável). Forçar `responsibleId = usuário logado` mudaria essa UX. Se o correto for "quem registra é o responsável", removo o dropdown e derivo do token — é só confirmar.
 
-### 8. Considerar cookie httpOnly para o token — ⏸️ ADIADO (decisão)
+### 8. Cookie httpOnly para o access token ✅ FEITO
 
-- [ ] `LabFlow-Front/src/lib/auth/session.ts` — token no `localStorage`
+O access token saiu do `localStorage`. Agora **os dois** tokens da sessão vivem em cookies `httpOnly` + `SameSite=Lax`: `labflow_access` (curto, o `expires` acompanha o `exp` do JWT) e `labflow_refresh` (longo, rotativo). Nenhum deles passa pelo JavaScript da página, então um XSS futuro não tem mais o que roubar.
 
-Qualquer XSS futuro rouba a sessão. Não há sinks de XSS hoje, então o risco é latente. Evolução ideal: cookie `httpOnly` + `SameSite=Lax`.
+**Backend**
+- [x] `src/auth/auth-cookies.ts` (era `refresh-cookie.ts`) — grava e apaga os dois cookies com os mesmos atributos
+- [x] `src/common/strategy/jwt.strategy.ts` — extrai o JWT do cookie `labflow_access`, com o header `Authorization: Bearer` mantido como segunda opção (Swagger, testes, integrações servidor-a-servidor não têm cookie jar)
+- [x] `src/auth/auth.controller.ts` — `signin` grava os dois cookies e devolve **só o perfil** no corpo; `refresh` responde **204** e regrava os cookies; `logout` apaga os dois
+- [x] `src/auth/auth.service.ts` — `signToken` passa a devolver o vencimento junto (é ele que vira o `expires` do cookie) e `signin` devolve o `UserView`
 
-**Por que não fiz agora:** é mudança arquitetural grande (afeta o interceptor do Axios, o `AuthProvider`, o guard de rota e exigiria o back setar/ler cookie). Fazer pela metade é pior que não fazer. A mitigação imediata (headers de segurança) foi aplicada no item 10. Fica como item planejado — decidir junto com o item 13.
+**Frontend**
+- [x] `src/lib/auth/session.ts` — o storage guarda **apenas o perfil** (cache de exibição: nome, papéis). Não é credencial; adulterá-lo muda o menu, nunca o que a API autoriza
+- [x] `src/lib/http/client.ts` — o interceptor que montava `Authorization` foi removido: quem anexa o token é o navegador. O ciclo de renovação continua igual (401 → `POST /auth/refresh` → refaz a requisição), só que sem tocar em token
+- [x] `src/repositories/auth/auth.http.ts` — o login não decodifica mais o JWT para achar o `sub` nem faz o `GET /user/:id` seguinte: o perfil vem na resposta do `signin` (uma requisição a menos por login)
+
+**⚠️ Ação (ops):** `ACCESS_COOKIE_PATH` precisa cobrir a API inteira (padrão `/`), porque o access acompanha toda requisição — não só as de `/auth`. `AUTH_COOKIE_SAMESITE` substitui `REFRESH_COOKIE_SAMESITE` e vale para os dois cookies (o nome antigo segue funcionando como fallback).
+
+**Sobre CSRF:** com a autenticação em cookie, o navegador anexa o token sozinho — o `SameSite=Lax` é o que impede um site terceiro de disparar POSTs autenticados. Enquanto front e API dividirem o mesmo site, isso basta. **Se um dia a API for para um domínio de registro diferente**, `SameSite` terá de virar `none` e aí um token anti-CSRF passa a ser obrigatório.
 
 ### 9. Proteger o Swagger em produção ✅ FEITO
 
