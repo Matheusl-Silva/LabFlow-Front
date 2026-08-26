@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -18,29 +18,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/forms/FormField";
+import { PasswordStrength } from "@/components/forms/PasswordStrength";
 import { registerSchema, type RegisterInput } from "@/schemas/auth.schema";
 import { authService } from "@/services/auth.service";
 import { isApiError } from "@/lib/http/errors";
 import { routes } from "@/constants/routes";
-import { cn } from "@/lib/utils";
-
-function strengthScore(password: string): number {
-  let score = 0;
-  if (password.length >= 8) score++;
-  if (/[A-Z]/.test(password)) score++;
-  if (/[0-9]/.test(password)) score++;
-  if (/[^A-Za-z0-9]/.test(password)) score++;
-  return score;
-}
-
-const STRENGTH_LABELS = ["Muito fraca", "Fraca", "Razoável", "Boa", "Forte"];
-const STRENGTH_COLORS = [
-  "bg-slate-200",
-  "bg-red-400",
-  "bg-amber-400",
-  "bg-emerald-400",
-  "bg-emerald-500",
-];
 
 export default function CadastroPage() {
   const router = useRouter();
@@ -57,7 +39,6 @@ export default function CadastroPage() {
   });
 
   const senhaValue = watch("senha");
-  const score = useMemo(() => strengthScore(senhaValue ?? ""), [senhaValue]);
 
   async function onSubmit(values: RegisterInput) {
     try {
@@ -129,22 +110,7 @@ export default function CadastroPage() {
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
-            {senhaValue && (
-              <div className="mt-2 space-y-1">
-                <div className="flex h-1.5 gap-1">
-                  {[0, 1, 2, 3].map((i) => (
-                    <div
-                      key={i}
-                      className={cn(
-                        "flex-1 rounded-full transition-colors",
-                        i < score ? STRENGTH_COLORS[score] : "bg-slate-200",
-                      )}
-                    />
-                  ))}
-                </div>
-                <p className="text-xs text-slate-500">{STRENGTH_LABELS[score]}</p>
-              </div>
-            )}
+            <PasswordStrength value={senhaValue} />
           </FormField>
 
           <FormField
