@@ -36,6 +36,17 @@ export interface ExamDetail {
   date: string;
   data: ExamData;
   schema: ExamTemplateSchema;
+  /**
+   * Observação deste resultado (amostra hemolisada, jejum irregular). É do
+   * exame lançado, ao contrário de `material`/`method`.
+   */
+  observation: string | null;
+  /**
+   * Vêm embutidos do modelo (`examTemplate.material` / `.method`), como o
+   * `schema` — o laudo os imprime sem precisar de um GET /template/:id extra.
+   */
+  material: string | null;
+  method: string | null;
   examTemplateId: number | null;
   patientId: number | null;
   preceptorId: number | null;
@@ -52,6 +63,8 @@ export interface ExamInput {
   data: ExamData;
   preceptorId: number;
   responsibleId: number;
+  /** Texto livre; `null` quando em branco. */
+  observation?: string | null;
 }
 
 /**
@@ -64,4 +77,5 @@ export interface ExamUpdateInput {
   data: ExamData;
   preceptorId: number;
   responsibleId: number;
+  observation?: string | null;
 }

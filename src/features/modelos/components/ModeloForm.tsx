@@ -14,9 +14,19 @@ import {
   type ExamTemplateSchema,
 } from "@/types";
 
+export interface ModeloFormValues {
+  name: string;
+  schema: ExamTemplateSchema;
+  /** `null` quando em branco — o laudo omite a linha em vez de imprimir vazio. */
+  material: string | null;
+  method: string | null;
+}
+
 interface ModeloFormProps {
   initialName?: string;
   initialFields?: ExamFieldDraft[];
+  initialMaterial?: string | null;
+  initialMethod?: string | null;
   submitLabel: string;
   /**
    * Nomes já em uso por outros modelos. A API identifica as versões de um mesmo
@@ -24,19 +34,23 @@ interface ModeloFormProps {
    * então dois modelos homônimos embaralhariam o histórico de versões de ambos.
    */
   nomesEmUso?: string[];
-  onSubmit: (values: { name: string; schema: ExamTemplateSchema }) => Promise<void>;
+  onSubmit: (values: ModeloFormValues) => Promise<void>;
   onCancel: () => void;
 }
 
 export function ModeloForm({
   initialName = "",
   initialFields,
+  initialMaterial,
+  initialMethod,
   submitLabel,
   nomesEmUso = [],
   onSubmit,
   onCancel,
 }: ModeloFormProps) {
   const [name, setName] = useState(initialName);
+  const [material, setMaterial] = useState(initialMaterial ?? "");
+  const [method, setMethod] = useState(initialMethod ?? "");
   const [fields, setFields] = useState<ExamFieldDraft[]>(
     initialFields?.length ? initialFields : [emptyField()],
   );
@@ -65,7 +79,12 @@ export function ModeloForm({
     setError(null);
     setSubmitting(true);
     try {
-      await onSubmit({ name: nome, schema: draftToSchema(fields) });
+      await onSubmit({
+        name: nome,
+        schema: draftToSchema(fields),
+        material: material.trim() || null,
+        method: method.trim() || null,
+      });
     } finally {
       setSubmitting(false);
     }
@@ -89,6 +108,40 @@ export function ModeloForm({
               onChange={(e) => setName(e.target.value)}
             />
           </FormField>
+
+          {/* Material e método são do TIPO de exame, não do exame lançado: ficam
+              aqui para o operador não redigitá-los a cada resultado. */}
+          <div className="grid gap-5 sm:grid-cols-2">
+            <FormField
+              id="modelo-material"
+              label="Material"
+              hint="Amostra analisada. Aparece no cabeçalho do laudo."
+            >
+              <Input
+                id="modelo-material"
+                value={material}
+                disabled={submitting}
+                maxLength={120}
+                placeholder="Sangue total (EDTA)"
+                onChange={(e) => setMaterial(e.target.value)}
+              />
+            </FormField>
+
+            <FormField
+              id="modelo-metodo"
+              label="Método"
+              hint="Técnica usada na análise. Aparece no cabeçalho do laudo."
+            >
+              <Input
+                id="modelo-metodo"
+                value={method}
+                disabled={submitting}
+                maxLength={120}
+                placeholder="Citometria de fluxo"
+                onChange={(e) => setMethod(e.target.value)}
+              />
+            </FormField>
+          </div>
         </CardContent>
       </Card>
 

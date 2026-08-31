@@ -8,6 +8,9 @@ interface LaudoLayoutProps {
   paciente: Paciente;
   responsavelNome?: string | null;
   preceptorNome?: string | null;
+  /** Vêm do modelo do exame. Nulos, a linha some do cabeçalho. */
+  material?: string | null;
+  method?: string | null;
   variant?: "screen" | "print";
   children: React.ReactNode;
 }
@@ -24,6 +27,8 @@ export function LaudoLayout({
   paciente,
   responsavelNome,
   preceptorNome,
+  material,
+  method,
   variant = "screen",
   children,
 }: LaudoLayoutProps) {
@@ -61,6 +66,10 @@ export function LaudoLayout({
           <LaudoInfo label="Nascimento" value={formatDate(paciente.dataNascimento)} />
           <LaudoInfo label="Responsável" value={responsavelNome ?? "—"} />
           <LaudoInfo label="Preceptor" value={preceptorNome ?? "—"} />
+          {/* Modelos antigos não têm material/método: em vez de imprimir "—",
+              a linha some — o laudo não deve afirmar o que não sabe. */}
+          {material && <LaudoInfo label="Material" value={material} />}
+          {method && <LaudoInfo label="Método" value={method} />}
         </dl>
       </header>
 

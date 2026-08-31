@@ -27,13 +27,18 @@ interface ExamDetailApi {
   id: number;
   date: string;
   data?: ExamData | null;
+  observation?: string | null;
   examTemplateId?: number;
   patientId?: number;
   preceptorId?: number;
   responsibleId?: number;
   preceptor?: { name?: string } | null;
   responsible?: { name?: string } | null;
-  examTemplate?: { schema?: ExamTemplateSchema | null } | null;
+  examTemplate?: {
+    schema?: ExamTemplateSchema | null;
+    material?: string | null;
+    method?: string | null;
+  } | null;
 }
 
 const toIsoDay = (value: string) =>
@@ -54,6 +59,9 @@ function toDetail(api: ExamDetailApi): ExamDetail {
     date: toIsoDay(api.date),
     data: api.data ?? {},
     schema: api.examTemplate?.schema ?? {},
+    observation: api.observation ?? null,
+    material: api.examTemplate?.material ?? null,
+    method: api.examTemplate?.method ?? null,
     examTemplateId: api.examTemplateId ?? null,
     patientId: api.patientId ?? null,
     preceptorId: api.preceptorId ?? null,
@@ -92,5 +100,9 @@ export const httpExamRepository: ExamRepository = {
 
   async delete(id) {
     await httpClient.delete(endpoints.exam.byId(id));
+  },
+
+  async registerReport(id) {
+    await httpClient.post(endpoints.exam.report(id));
   },
 };

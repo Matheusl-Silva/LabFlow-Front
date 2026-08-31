@@ -28,7 +28,16 @@ export function LogDiffDialog({
           </DialogTitle>
         </DialogHeader>
 
-        {changes.length === 0 ? (
+        {log?.action === "PRINT" ? (
+          // Emitir laudo não altera o exame: não há "antes/depois" a mostrar, e
+          // a mensagem genérica de "sem diferenças" pareceria um log defeituoso.
+          <p className="text-sm text-slate-600">
+            O laudo deste exame foi emitido em{" "}
+            {new Date(log.createdAt).toLocaleString("pt-BR")}. A emissão não
+            altera o exame — o registro existe para rastrear quem levou o
+            resultado para fora do sistema.
+          </p>
+        ) : changes.length === 0 ? (
           <p className="text-sm text-slate-500">
             Sem diferenças de campo registradas.
           </p>

@@ -1,5 +1,9 @@
-/** `ADJUST` é a movimentação de estoque — separada do `UPDATE` (edição). */
-export type AuditAction = "CREATE" | "UPDATE" | "DELETE" | "ADJUST";
+/**
+ * `ADJUST` é a movimentação de estoque — separada do `UPDATE` (edição).
+ * `PRINT` é a emissão do laudo: não altera o exame, registra que o resultado
+ * saiu do sistema (e por quem).
+ */
+export type AuditAction = "CREATE" | "UPDATE" | "DELETE" | "ADJUST" | "PRINT";
 export type AuditEntity =
   | "exam"
   | "exam_template"

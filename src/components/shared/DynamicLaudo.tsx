@@ -58,6 +58,8 @@ export function DynamicLaudo({
       paciente={paciente}
       responsavelNome={responsavelNome ?? exam.responsibleName}
       preceptorNome={preceptorNome ?? exam.preceptorName}
+      material={exam.material}
+      method={exam.method}
       variant={variant}
     >
       <LaudoSecao title="Resultados" variant={variant}>
@@ -90,6 +92,16 @@ export function DynamicLaudo({
           </table>
         )}
       </LaudoSecao>
+
+      {/* Só existe quando o operador escreveu algo: seção vazia num laudo é
+          ruído, e pior, sugere que faltou preencher. */}
+      {exam.observation?.trim() && (
+        <LaudoSecao title="Observação" variant={variant}>
+          <p className="whitespace-pre-line text-sm text-slate-700">
+            {exam.observation.trim()}
+          </p>
+        </LaudoSecao>
+      )}
     </LaudoLayout>
   );
 }

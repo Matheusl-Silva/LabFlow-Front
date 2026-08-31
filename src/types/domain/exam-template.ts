@@ -31,6 +31,15 @@ export interface ExamTemplate {
   name: string;
   version: number;
   schema: ExamTemplateSchema;
+  /**
+   * Material biológico e método/técnica. Ficam no MODELO, não no exame: são
+   * propriedades do tipo de exame (hemograma é sempre sangue total / citometria
+   * de fluxo), então cadastram-se uma vez e todo laudo daquele tipo já sai com
+   * eles. Nulos nos modelos cadastrados antes destes campos existirem — o laudo
+   * simplesmente omite a linha.
+   */
+  material: string | null;
+  method: string | null;
   active: boolean;
   createdAt?: string;
   updatedAt?: string;
@@ -40,6 +49,8 @@ export interface ExamTemplate {
 export interface ExamTemplateInput {
   name: string;
   schema: ExamTemplateSchema;
+  material?: string | null;
+  method?: string | null;
 }
 
 /**
@@ -50,12 +61,21 @@ export interface ExamTemplateInput {
 export interface ExamTemplateNewVersionInput {
   name?: string;
   schema: ExamTemplateSchema;
+  /**
+   * Omitidos, a nova versão HERDA o material/método da versão atual (a API só
+   * trata `undefined` como "não mexi"). `null` limpa de fato.
+   */
+  material?: string | null;
+  method?: string | null;
 }
 
 /** PUT /template/:id — metadados apenas; o schema é imutável dentro de uma versão. */
 export interface ExamTemplateUpdateInput {
   name?: string;
   active?: boolean;
+  /** Material e método são metadados: mudá-los NÃO cria uma versão nova. */
+  material?: string | null;
+  method?: string | null;
 }
 
 /**

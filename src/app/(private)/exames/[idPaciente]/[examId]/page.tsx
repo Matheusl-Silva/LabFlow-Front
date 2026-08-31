@@ -3,7 +3,8 @@
 import { useMemo } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ArrowLeft, Pencil, Printer } from "lucide-react";
+import { ArrowLeft, Loader2, Pencil, Printer } from "lucide-react";
+import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/button";
 import { LoadingState } from "@/components/feedback/LoadingState";
@@ -12,7 +13,11 @@ import { DynamicLaudo } from "@/components/shared/DynamicLaudo";
 import { LaudoImpressao } from "@/components/shared/LaudoImpressao";
 import { useAuth } from "@/providers/AuthProvider";
 import { usePacienteQuery } from "@/hooks/usePacientes";
-import { useExamQuery, useExamsByPatientQuery } from "@/hooks/useExam";
+import {
+  useExamQuery,
+  useExamsByPatientQuery,
+  useRegisterExamReport,
+} from "@/hooks/useExam";
 import { useUsuariosQuery } from "@/hooks/useUsuarios";
 import { useSettingsQuery } from "@/hooks/useSettings";
 import { logoDataUrl } from "@/types";
@@ -41,6 +46,11 @@ export default function VisualizarExameDinamicoPage() {
   // Logo e rodapé institucionais enviados pelo admin (Configurações). Sem eles,
   // o laudo omite a imagem do cabeçalho e/ou o rodapé.
   const { data: settings } = useSettingsQuery();
+
+  // A emissão do laudo é um evento de auditoria: o resultado sai do sistema e o
+  // histórico precisa dizer quem o levou. Como o PDF é gerado pelo navegador, é
+  // esta tela que avisa a API — não há como o backend perceber sozinho.
+  const registrarLaudo = useRegisterExamReport();
 
   const nomesPorId = useMemo(
     () => new Map((usuarios ?? []).map((u) => [u.id, u.nome])),
@@ -76,6 +86,22 @@ export default function VisualizarExameDinamicoPage() {
     exam.responsibleName ??
     (exam.responsibleId !== null ? (nomesPorId.get(exam.responsibleId) ?? null) : null);
 
+  // Fora do closure: dentro dele o TypeScript perde o estreitamento feito pelos
+  // early returns acima e volta a ver `exam` como possivelmente indefinido.
+  const idDoExame = exam.id;
+
+  async function imprimir() {
+    try {
+      await registrarLaudo.mutateAsync(idDoExame);
+    } catch {
+      // Registrar é efeito colateral: uma falha na auditoria não pode impedir o
+      // laboratório de entregar o laudo. Avisamos para o usuário saber que o
+      // histórico ficou sem esta emissão, e seguimos para a impressão.
+      toast.warning("Não foi possível registrar a emissão no histórico.");
+    }
+    window.print();
+  }
+
   return (
     <>
       {/* Tela: cabeçalho + laudo em cards. Escondido na impressão. */}
@@ -99,8 +125,16 @@ export default function VisualizarExameDinamicoPage() {
                   </Link>
                 </Button>
               )}
-              <Button variant="outline" onClick={() => window.print()}>
-                <Printer className="h-4 w-4" />
+              <Button
+                variant="outline"
+                onClick={imprimir}
+                disabled={registrarLaudo.isPending}
+              >
+                {registrarLaudo.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Printer className="h-4 w-4" />
+                )}
                 Imprimir / Salvar PDF
               </Button>
             </div>

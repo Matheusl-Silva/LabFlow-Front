@@ -10,4 +10,6 @@ export const examService = {
   atualizar: (id: number | string, input: ExamUpdateInput): Promise<void> =>
     examRepository.update(id, input),
   remover: (id: number | string): Promise<void> => examRepository.delete(id),
+  registrarLaudo: (id: number | string): Promise<void> =>
+    examRepository.registerReport(id),
 };

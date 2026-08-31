@@ -93,6 +93,7 @@ export function LaudoImpressao({
 }: LaudoImpressaoProps) {
   const campos = Object.entries(exam.schema);
   const rodape = footerText?.trim();
+  const observacao = exam.observation?.trim();
 
   return (
     <article
@@ -118,6 +119,22 @@ export function LaudoImpressao({
           {templateName.toUpperCase()}
         </span>
       </div>
+
+      {/* Material e método vêm do modelo do exame. Quando o modelo não os
+          define, a linha some — melhor omitir do que imprimir um traço, que num
+          laudo lido como documento sugere "não se aplica". */}
+      {exam.material && (
+        <div>
+          <span className="font-bold">MATERIAL: </span>
+          {exam.material}
+        </div>
+      )}
+      {exam.method && (
+        <div>
+          <span className="font-bold">MÉTODO: </span>
+          {exam.method}
+        </div>
+      )}
 
       <div className="mt-3 font-bold">RESULTADO:</div>
 
@@ -149,7 +166,16 @@ export function LaudoImpressao({
         </table>
       )}
 
-      {/* Observação */}
+      {/* Observação do exame, escrita por quem lançou o resultado. */}
+      {observacao && (
+        <div className="mt-6">
+          <div className="font-bold">OBSERVAÇÃO:</div>
+          <p className="whitespace-pre-line">{observacao}</p>
+        </div>
+      )}
+
+      {/* Ressalva fixa do laudo acadêmico — não confundir com a observação
+          acima, que é do resultado. */}
       <p className="mt-6">
         OBS: Este laudo é estritamente destinado a fins acadêmicos e, portanto, não
         possui validade legal.

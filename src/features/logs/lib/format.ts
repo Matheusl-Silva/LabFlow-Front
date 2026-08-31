@@ -3,13 +3,15 @@ import type { AuditAction, AuditEntity } from "@/types";
 /**
  * "Movimentou" (entrada/saída de estoque) é separado de "Editou" de propósito:
  * quem lê o histórico precisa distinguir a operação do dia a dia de uma
- * alteração no cadastro do item.
+ * alteração no cadastro do item. "Gerou laudo" segue a mesma lógica: não muda
+ * nada no exame, mas é o momento em que o resultado sai do sistema.
  */
 export const ACTION_LABEL: Record<AuditAction, string> = {
   CREATE: "Criou",
   UPDATE: "Editou",
   DELETE: "Excluiu",
   ADJUST: "Movimentou",
+  PRINT: "Gerou laudo",
 };
 
 export const ACTION_BADGE: Record<AuditAction, string> = {
@@ -17,6 +19,7 @@ export const ACTION_BADGE: Record<AuditAction, string> = {
   UPDATE: "bg-amber-100 text-amber-800",
   DELETE: "bg-red-100 text-red-800",
   ADJUST: "bg-sky-100 text-sky-800",
+  PRINT: "bg-violet-100 text-violet-800",
 };
 
 export const ENTITY_LABEL: Record<AuditEntity, string> = {
@@ -40,8 +43,11 @@ export const FIELD_LABEL: Record<string, string> = {
   // Modelo de exame
   schema: "Campos",
   active: "Ativo",
+  material: "Material",
+  method: "Método",
   // Exame
   data: "Resultado",
+  observation: "Observação",
   examTemplateId: "Modelo de exame",
   patientId: "Paciente",
   preceptorId: "Preceptor",

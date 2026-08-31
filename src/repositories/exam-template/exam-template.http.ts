@@ -14,6 +14,8 @@ interface ExamTemplateApi {
   name: string;
   version: number;
   schema: ExamTemplateSchema | null;
+  material?: string | null;
+  method?: string | null;
   active: boolean;
   createdAt?: string;
   updatedAt?: string;
@@ -25,6 +27,8 @@ function toDomain(api: ExamTemplateApi): ExamTemplate {
     name: api.name,
     version: api.version,
     schema: api.schema ?? {},
+    material: api.material ?? null,
+    method: api.method ?? null,
     active: api.active,
     createdAt: api.createdAt,
     updatedAt: api.updatedAt,
@@ -51,6 +55,8 @@ export const httpExamTemplateRepository: ExamTemplateRepository = {
     const { data } = await httpClient.post<ExamTemplateApi>(endpoints.templates.base, {
       name: input.name,
       schema: input.schema,
+      material: input.material ?? null,
+      method: input.method ?? null,
     });
     return toDomain(data);
   },
@@ -59,7 +65,14 @@ export const httpExamTemplateRepository: ExamTemplateRepository = {
     const { data } = await httpClient.post<ExamTemplateApi>(
       endpoints.templates.newVersion(id),
       // `name` só vai quando definido: renomear + trocar campos numa chamada só.
-      input.name ? { name: input.name, schema: input.schema } : { schema: input.schema },
+      // Material e método vão sempre (inclusive `null`): omiti-los faria a API
+      // herdar os da versão anterior, e aí não daria para limpá-los.
+      {
+        ...(input.name ? { name: input.name } : {}),
+        schema: input.schema,
+        material: input.material ?? null,
+        method: input.method ?? null,
+      },
     );
     return toDomain(data);
   },

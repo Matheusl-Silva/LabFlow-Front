@@ -40,9 +40,14 @@ export default function NovoModeloPage() {
         submitLabel="Criar modelo"
         nomesEmUso={modelos.map((m) => m.name)}
         onCancel={() => router.push(routes.modelos)}
-        onSubmit={async ({ name, schema }) => {
+        onSubmit={async ({ name, schema, material, method }) => {
           try {
-            const modelo = await createMutation.mutateAsync({ name, schema });
+            const modelo = await createMutation.mutateAsync({
+              name,
+              schema,
+              material,
+              method,
+            });
             toast.success(`Modelo "${modelo.name}" criado.`);
             router.push(routes.modelos);
           } catch (err) {

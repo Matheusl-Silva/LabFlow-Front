@@ -33,6 +33,7 @@ interface DynamicExamValues {
   responsibleId: string;
   preceptorId: string;
   data: Record<string, string>;
+  observation: string;
 }
 
 /** As referências são texto livre — só as concatenamos para exibir sob o campo. */
@@ -148,6 +149,8 @@ export default function NovoExameDinamicoPage() {
             responsibleId: Number(values.responsibleId),
             preceptorId: Number(values.preceptorId),
             data,
+            // `null` em vez de "" — o laudo omite a seção quando não há texto.
+            observation: values.observation?.trim() || null,
           });
           toast.success(`Exame #${exam.id} cadastrado com sucesso.`);
           router.push(`${routes.exames}/${idPaciente}`);
@@ -182,6 +185,7 @@ function DynamicExamForm({
       responsibleId: "",
       preceptorId: "",
       data: {},
+      observation: "",
     },
   });
 
@@ -269,6 +273,30 @@ function DynamicExamForm({
                   </select>
                 </FormField>
               </div>
+
+              {/* Material e método vêm do MODELO (são fixos por tipo de exame),
+                  então aparecem aqui só para conferência — editá-los é no
+                  cadastro do modelo, não a cada lançamento. */}
+              {(template.material || template.method) && (
+                <dl className="grid gap-x-6 gap-y-2 rounded-lg bg-slate-50 px-4 py-3 text-sm sm:grid-cols-2">
+                  {template.material && (
+                    <div>
+                      <dt className="text-xs uppercase tracking-wide text-slate-500">
+                        Material
+                      </dt>
+                      <dd className="font-medium text-slate-800">{template.material}</dd>
+                    </div>
+                  )}
+                  {template.method && (
+                    <div>
+                      <dt className="text-xs uppercase tracking-wide text-slate-500">
+                        Método
+                      </dt>
+                      <dd className="font-medium text-slate-800">{template.method}</dd>
+                    </div>
+                  )}
+                </dl>
+              )}
             </section>
 
             <section className="space-y-3">
@@ -298,6 +326,28 @@ function DynamicExamForm({
                   ))}
                 </div>
               )}
+            </section>
+
+            <section className="space-y-3">
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+                Observação
+              </h3>
+              {/* Particularidades DESTE resultado (amostra hemolisada, jejum
+                  irregular). Material e método não entram aqui: são do modelo. */}
+              <FormField
+                id="observation"
+                label="Observação do laudo"
+                hint="Opcional. Em branco, o laudo não exibe a seção."
+              >
+                <textarea
+                  id="observation"
+                  rows={3}
+                  maxLength={1000}
+                  placeholder="Ex.: amostra levemente hemolisada."
+                  className="w-full resize-y rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+                  {...register("observation", { maxLength: 1000 })}
+                />
+              </FormField>
             </section>
 
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
