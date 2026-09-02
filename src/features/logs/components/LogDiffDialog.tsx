@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import type { AuditLog } from "@/types";
-import { diffFields, preview, ENTITY_LABEL, ACTION_LABEL } from "../lib/format";
+import { diffFields, preview, entityLabel, ACTION_LABEL } from "../lib/format";
 
 export function LogDiffDialog({
   log,
@@ -23,8 +23,7 @@ export function LogDiffDialog({
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>
-            {log &&
-              `${ACTION_LABEL[log.action]} ${ENTITY_LABEL[log.entity]} #${log.entityId}`}
+            {log && `${ACTION_LABEL[log.action]} ${entityLabel(log)}`}
           </DialogTitle>
         </DialogHeader>
 

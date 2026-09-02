@@ -24,6 +24,12 @@ export interface AuditLog {
    * nem como exclusão lógica.
    */
   userName?: string | null;
+  /**
+   * Nome do registro alvo da ação, resolvido pela API ("Maria Silva",
+   * "Hemograma — Maria Silva"). Anulável: só fica nulo se o registro não
+   * existir mais nem como exclusão lógica — aí a tela cai no id.
+   */
+  entityName?: string | null;
   before: Record<string, unknown> | null;
   after: Record<string, unknown> | null;
   createdAt: string;

@@ -1,4 +1,4 @@
-import type { AuditAction, AuditEntity } from "@/types";
+import type { AuditAction, AuditEntity, AuditLog } from "@/types";
 
 /**
  * "Movimentou" (entrada/saída de estoque) é separado de "Editou" de propósito:
@@ -30,6 +30,20 @@ export const ENTITY_LABEL: Record<AuditEntity, string> = {
   stock_item: "Item de estoque",
   user: "Usuário",
 };
+
+/**
+ * Como o registro alterado aparece na tela: o nome resolvido pela API ("Maria
+ * Silva") em vez do id, que não diz nada a quem lê o histórico. O tipo entra
+ * junto porque nomes se repetem entre entidades — "Item de estoque: Álcool 70%"
+ * é diferente de um paciente homônimo.
+ *
+ * Sem nome (registro apagado de vez, ou log antigo), cai no par tipo + id, que
+ * mantém o evento rastreável.
+ */
+export function entityLabel(log: AuditLog): string {
+  const tipo = ENTITY_LABEL[log.entity] ?? log.entity;
+  return log.entityName ? `${tipo}: ${log.entityName}` : `${tipo} #${log.entityId}`;
+}
 
 /**
  * Rótulos em português dos campos do sistema (nomes de coluna em inglês → PT).
