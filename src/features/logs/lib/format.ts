@@ -70,6 +70,7 @@ export const FIELD_LABEL: Record<string, string> = {
   email: "E-mail",
   phone: "Telefone",
   period: "Período",
+  sex: "Sexo",
   medication: "Medicação",
   pathology: "Patologia",
   birthDate: "Data de nascimento",

@@ -8,6 +8,12 @@ export const pacienteSchema = z.object({
   periodo: z.enum(["matutino", "noturno"], {
     errorMap: () => ({ message: "Selecione o período" }),
   }),
+  // Sem valor padrão, ao contrário do período: assumir um sexo é atribuir um
+  // dado clínico errado em silêncio, e é ele que decide qual faixa de
+  // referência vale no laudo.
+  sexo: z.enum(["masculino", "feminino"], {
+    errorMap: () => ({ message: "Selecione o sexo" }),
+  }),
   dataNascimento: z
     .string()
     .min(1, "Informe a data de nascimento")

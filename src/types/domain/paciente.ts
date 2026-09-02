@@ -6,6 +6,14 @@ export const PERIODO_API: Record<Periodo, string> = {
   noturno: "Noturno",
 };
 
+/** Idem: a API persiste `Sex.MALE = 'Masculino'`. */
+export type Sexo = "masculino" | "feminino";
+
+export const SEXO_API: Record<Sexo, string> = {
+  masculino: "Masculino",
+  feminino: "Feminino",
+};
+
 /**
  * Atenção: `GET /patient` e `GET /patient/:id` devolvem payloads diferentes por
  * perfil (patient.service.ts):
@@ -22,6 +30,11 @@ export interface Paciente {
   nome: string | null;
   email: string | null;
   periodo: Periodo | null;
+  /**
+   * Nulo também nos pacientes cadastrados antes do campo existir — não só na
+   * versão anonimizada da listagem.
+   */
+  sexo: Sexo | null;
   dataNascimento: string | null;
   telefone: string | null;
   cpf: string | null;
@@ -34,6 +47,7 @@ export interface PacienteInput {
   nome: string;
   email: string;
   periodo: Periodo;
+  sexo: Sexo;
   dataNascimento: string;
   telefone: string;
   cpf: string;

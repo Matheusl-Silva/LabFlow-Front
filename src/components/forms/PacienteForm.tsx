@@ -1,6 +1,6 @@
 "use client";
 
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, type DefaultValues } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -22,7 +22,11 @@ interface PacienteFormProps {
   onCancel?: () => void;
 }
 
-const empty: PacienteFormInput = {
+// `DefaultValues` (e não `PacienteFormInput`) porque `sexo` nasce vazio: um
+// sexo pré-selecionado seria salvo sem ninguém decidir por ele, e é ele que
+// define a faixa de referência do laudo. O zodResolver barra o envio até a
+// escolha.
+const empty: DefaultValues<PacienteFormInput> = {
   nome: "",
   email: "",
   periodo: "matutino",
@@ -55,6 +59,7 @@ export function PacienteForm({
           nome: initial.nome ?? "",
           email: initial.email ?? "",
           periodo: initial.periodo ?? undefined,
+          sexo: initial.sexo ?? undefined,
           dataNascimento: initial.dataNascimento ?? "",
           telefone: initial.telefone ?? "",
           cpf: initial.cpf ?? "",
@@ -134,7 +139,36 @@ export function PacienteForm({
           />
         </FormField>
 
-        <FormField id="periodo" label="Período" required error={errors.periodo?.message} className="sm:col-span-2">
+        <FormField id="sexo" label="Sexo" required error={errors.sexo?.message}>
+          <Controller
+            control={control}
+            name="sexo"
+            render={({ field }) => (
+              <div className="flex gap-2">
+                {(["masculino", "feminino"] as const).map((s) => {
+                  const active = field.value === s;
+                  return (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => field.onChange(s)}
+                      className={`flex-1 rounded-md border px-4 py-2 text-sm font-medium capitalize transition-colors ${
+                        active
+                          ? "border-brand-500 bg-brand-50 text-brand-800"
+                          : "border-slate-300 bg-white text-slate-600 hover:bg-slate-50"
+                      }`}
+                      aria-pressed={active}
+                    >
+                      {s}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          />
+        </FormField>
+
+        <FormField id="periodo" label="Período" required error={errors.periodo?.message}>
           <Controller
             control={control}
             name="periodo"
