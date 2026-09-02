@@ -28,6 +28,7 @@ interface ExamDetailApi {
   date: string;
   data?: ExamData | null;
   observation?: string | null;
+  internalObservation?: string | null;
   examTemplateId?: number;
   patientId?: number;
   preceptorId?: number;
@@ -60,6 +61,7 @@ function toDetail(api: ExamDetailApi): ExamDetail {
     data: api.data ?? {},
     schema: api.examTemplate?.schema ?? {},
     observation: api.observation ?? null,
+    internalObservation: api.internalObservation ?? null,
     material: api.examTemplate?.material ?? null,
     method: api.examTemplate?.method ?? null,
     examTemplateId: api.examTemplateId ?? null,

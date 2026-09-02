@@ -34,6 +34,7 @@ interface DynamicExamValues {
   preceptorId: string;
   data: Record<string, string>;
   observation: string;
+  internalObservation: string;
 }
 
 /** As referências são texto livre — só as concatenamos para exibir sob o campo. */
@@ -151,6 +152,7 @@ export default function NovoExameDinamicoPage() {
             data,
             // `null` em vez de "" — o laudo omite a seção quando não há texto.
             observation: values.observation?.trim() || null,
+            internalObservation: values.internalObservation?.trim() || null,
           });
           toast.success(`Exame #${exam.id} cadastrado com sucesso.`);
           router.push(`${routes.exames}/${idPaciente}`);
@@ -186,6 +188,7 @@ function DynamicExamForm({
       preceptorId: "",
       data: {},
       observation: "",
+      internalObservation: "",
     },
   });
 
@@ -330,14 +333,14 @@ function DynamicExamForm({
 
             <section className="space-y-3">
               <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-                Observação
+                Observações
               </h3>
               {/* Particularidades DESTE resultado (amostra hemolisada, jejum
                   irregular). Material e método não entram aqui: são do modelo. */}
               <FormField
                 id="observation"
-                label="Observação do laudo"
-                hint="Opcional. Em branco, o laudo não exibe a seção."
+                label="Observação do laudo (impressa)"
+                hint="Opcional. Sai no laudo entregue ao paciente. Em branco, o laudo não exibe a seção."
               >
                 <textarea
                   id="observation"
@@ -346,6 +349,23 @@ function DynamicExamForm({
                   placeholder="Ex.: amostra levemente hemolisada."
                   className="w-full resize-y rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
                   {...register("observation", { maxLength: 1000 })}
+                />
+              </FormField>
+
+              {/* Recado interno do laboratório. Fica no sistema e nunca é
+                  renderizado no laudo — nem na tela, nem na impressão. */}
+              <FormField
+                id="internalObservation"
+                label="Observação interna (não impressa)"
+                hint="Opcional. Visível apenas no sistema — nunca sai no laudo."
+              >
+                <textarea
+                  id="internalObservation"
+                  rows={3}
+                  maxLength={1000}
+                  placeholder="Ex.: repetir a dosagem na próxima coleta."
+                  className="w-full resize-y rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+                  {...register("internalObservation", { maxLength: 1000 })}
                 />
               </FormField>
             </section>

@@ -37,10 +37,15 @@ export interface ExamDetail {
   data: ExamData;
   schema: ExamTemplateSchema;
   /**
-   * Observação deste resultado (amostra hemolisada, jejum irregular). É do
-   * exame lançado, ao contrário de `material`/`method`.
+   * Observação IMPRESSA deste resultado (amostra hemolisada, jejum irregular).
+   * É do exame lançado, ao contrário de `material`/`method`.
    */
   observation: string | null;
+  /**
+   * Observação NÃO impressa: recado interno do laboratório. Aparece na tela do
+   * exame, nunca no laudo — nem no layout de impressão, nem no de tela.
+   */
+  internalObservation: string | null;
   /**
    * Vêm embutidos do modelo (`examTemplate.material` / `.method`), como o
    * `schema` — o laudo os imprime sem precisar de um GET /template/:id extra.
@@ -63,8 +68,10 @@ export interface ExamInput {
   data: ExamData;
   preceptorId: number;
   responsibleId: number;
-  /** Texto livre; `null` quando em branco. */
+  /** Texto livre que SAI no laudo; `null` quando em branco. */
   observation?: string | null;
+  /** Texto livre que NÃO sai no laudo; `null` quando em branco. */
+  internalObservation?: string | null;
 }
 
 /**
@@ -78,4 +85,5 @@ export interface ExamUpdateInput {
   preceptorId: number;
   responsibleId: number;
   observation?: string | null;
+  internalObservation?: string | null;
 }

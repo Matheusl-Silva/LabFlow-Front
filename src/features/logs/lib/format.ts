@@ -61,7 +61,8 @@ export const FIELD_LABEL: Record<string, string> = {
   method: "Método",
   // Exame
   data: "Resultado",
-  observation: "Observação",
+  observation: "Observação do laudo",
+  internalObservation: "Observação interna",
   examTemplateId: "Modelo de exame",
   patientId: "Paciente",
   preceptorId: "Preceptor",
