@@ -58,3 +58,15 @@ export interface PacienteInput {
 export function nomePaciente(p: Paciente): string {
   return p.nome ?? `Paciente #${p.id}`;
 }
+
+/**
+ * Rótulo do sexo para exibição (laudo, telas de leitura).
+ *
+ * O traço cobre os dois casos em que o campo vem nulo: paciente cadastrado
+ * antes de o campo existir e, principalmente, o payload anonimizado que a API
+ * devolve a quem não tem o papel PATIENTS — mesmo tratamento que nome, CPF e
+ * nascimento recebem nesse cenário.
+ */
+export function labelSexo(sexo: Sexo | null | undefined): string {
+  return sexo ? SEXO_API[sexo] : "—";
+}

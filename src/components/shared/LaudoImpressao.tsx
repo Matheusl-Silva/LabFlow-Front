@@ -1,5 +1,5 @@
 import { formatCpf, formatDate } from "@/lib/format";
-import { nomePaciente, type Paciente } from "@/types";
+import { labelSexo, nomePaciente, type Paciente } from "@/types";
 import type { ExamDetail, ExamFieldReferences, ExamValue } from "@/types";
 
 interface LaudoImpressaoProps {
@@ -154,6 +154,7 @@ export function LaudoImpressao({
               <div className="mt-3">
                 <div>Paciente: {nomePaciente(paciente)}</div>
                 <div>Idade: {idadeEmAnos(paciente.dataNascimento)}</div>
+                <div>Sexo: {labelSexo(paciente.sexo)}</div>
                 <div>CPF: {formatCpf(paciente.cpf)}</div>
                 <div>Data: {formatDate(exam.date)}</div>
               </div>

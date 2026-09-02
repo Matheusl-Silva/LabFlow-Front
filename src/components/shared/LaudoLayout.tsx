@@ -1,5 +1,5 @@
 import { formatDate } from "@/lib/format";
-import { nomePaciente, type Paciente } from "@/types";
+import { labelSexo, nomePaciente, type Paciente } from "@/types";
 
 interface LaudoLayoutProps {
   title: string;
@@ -64,6 +64,7 @@ export function LaudoLayout({
         <dl className="mt-4 grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
           <LaudoInfo label="Paciente" value={`${nomePaciente(paciente)} (#${paciente.id})`} />
           <LaudoInfo label="Nascimento" value={formatDate(paciente.dataNascimento)} />
+          <LaudoInfo label="Sexo" value={labelSexo(paciente.sexo)} />
           <LaudoInfo label="Responsável" value={responsavelNome ?? "—"} />
           <LaudoInfo label="Preceptor" value={preceptorNome ?? "—"} />
           {/* Modelos antigos não têm material/método: em vez de imprimir "—",
