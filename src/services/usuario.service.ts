@@ -3,6 +3,8 @@ import type { Role, Usuario, UsuarioInput } from "@/types";
 
 export const usuarioService = {
   listar: (): Promise<Usuario[]> => usuarioRepository.listAll(),
+  /** Elegíveis a preceptor/responsável de exame: administradores ativos. */
+  listarEquipeExame: (): Promise<Usuario[]> => usuarioRepository.listExamStaff(),
   buscar: (id: number | string): Promise<Usuario> => usuarioRepository.findById(id),
   criar: (input: UsuarioInput): Promise<number> => usuarioRepository.create(input),
   atualizar: (id: number | string, input: UsuarioInput): Promise<void> =>

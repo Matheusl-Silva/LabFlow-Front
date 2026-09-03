@@ -13,7 +13,7 @@ import { FormField } from "@/components/forms/FormField";
 import { LoadingState } from "@/components/feedback/LoadingState";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { usePacienteQuery } from "@/hooks/usePacientes";
-import { useUsuariosQuery } from "@/hooks/useUsuarios";
+import { useEquipeExameQuery } from "@/hooks/useUsuarios";
 import { useExamQuery, useExamsByPatientQuery, useUpdateExam } from "@/hooks/useExam";
 import { isApiError } from "@/lib/http/errors";
 import { routes } from "@/constants/routes";
@@ -70,7 +70,9 @@ export default function EditarExameDinamicoPage() {
 
   const { data: paciente, isLoading: loadingPac, isError: pacError } =
     usePacienteQuery(idPaciente);
-  const { data: usuarios = [], isLoading: loadingUsuarios } = useUsuariosQuery();
+  // Só administradores ativos podem assinar o exame como preceptor ou
+  // responsável — a API já devolve a lista filtrada.
+  const { data: usuarios = [], isLoading: loadingUsuarios } = useEquipeExameQuery();
   const { data: exam, isLoading: loadingExam, isError: examError } =
     useExamQuery(examId);
   // O nome do template não vem em GET /exam/:id; a listagem do paciente (em cache
@@ -192,6 +194,15 @@ function DynamicExamEditForm({
 
   const campos = Object.entries(exam.schema);
 
+  // Exames antigos podem apontar para quem hoje não é mais elegível (nunca foi
+  // admin, perdeu o papel ou teve a conta desativada). O <select> não tem a
+  // opção, então o campo abre vazio: avisamos por que, em vez de deixar
+  // parecer que o exame nunca teve responsável.
+  const elegiveis = new Set(usuarios.map((u) => u.id));
+  const foraDaLista = (id: number | null) => id != null && !elegiveis.has(id);
+  const AVISO_FORA_DA_LISTA =
+    "Quem constava aqui não é mais elegível (só administradores ativos podem assinar). Escolha outro.";
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -233,6 +244,9 @@ function DynamicExamEditForm({
                   label="Responsável"
                   required
                   error={errors.responsibleId?.message}
+                  hint={
+                    foraDaLista(exam.responsibleId) ? AVISO_FORA_DA_LISTA : undefined
+                  }
                 >
                   <select
                     id="responsibleId"
@@ -255,6 +269,7 @@ function DynamicExamEditForm({
                   label="Preceptor"
                   required
                   error={errors.preceptorId?.message}
+                  hint={foraDaLista(exam.preceptorId) ? AVISO_FORA_DA_LISTA : undefined}
                 >
                   <select
                     id="preceptorId"

@@ -14,6 +14,12 @@ export const endpoints = {
   usuarios: {
     base: "/user",
     byId: (id: number | string) => `/user/${id}`,
+    /**
+     * Quem pode ser preceptor/responsável de exame: administradores ativos.
+     * Aberto a qualquer autenticado (o operador que lança o exame precisa da
+     * lista), e devolve só `{id, name}`.
+     */
+    examStaff: "/user/exam-staff",
   },
   pacientes: {
     base: "/patient",

@@ -2,6 +2,8 @@ import type { Role, Usuario, UsuarioInput } from "@/types";
 
 export interface UsuarioRepository {
   listAll(): Promise<Usuario[]>;
+  /** Administradores ativos — os únicos elegíveis a preceptor/responsável. */
+  listExamStaff(): Promise<Usuario[]>;
   findById(id: number | string): Promise<Usuario>;
   create(input: UsuarioInput): Promise<number>;
   update(id: number | string, input: UsuarioInput): Promise<void>;

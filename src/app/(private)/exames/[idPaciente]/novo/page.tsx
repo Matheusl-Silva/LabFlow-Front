@@ -13,7 +13,7 @@ import { FormField } from "@/components/forms/FormField";
 import { LoadingState } from "@/components/feedback/LoadingState";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { usePacienteQuery } from "@/hooks/usePacientes";
-import { useUsuariosQuery } from "@/hooks/useUsuarios";
+import { useEquipeExameQuery } from "@/hooks/useUsuarios";
 import { useExamTemplateQuery } from "@/hooks/useExamTemplates";
 import { useCreateExam } from "@/hooks/useExam";
 import { isApiError } from "@/lib/http/errors";
@@ -67,7 +67,9 @@ export default function NovoExameDinamicoPage() {
 
   const { data: paciente, isLoading: loadingPac, isError: pacError } =
     usePacienteQuery(idPaciente);
-  const { data: usuarios = [], isLoading: loadingUsuarios } = useUsuariosQuery();
+  // Só administradores ativos podem assinar o exame como preceptor ou
+  // responsável — a API já devolve a lista filtrada.
+  const { data: usuarios = [], isLoading: loadingUsuarios } = useEquipeExameQuery();
   const { data: template, isLoading: loadingTemplate, isError: templateError } =
     useExamTemplateQuery(templateId);
   const createMutation = useCreateExam(idPaciente ?? "");
