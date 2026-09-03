@@ -1,6 +1,13 @@
 import { httpClient } from "@/lib/http/client";
 import { endpoints } from "@/lib/http/endpoints";
-import { PERIODO_API, type Paciente, type PacienteInput, type Periodo } from "@/types";
+import {
+  PERIODO_API,
+  SEXO_API,
+  type Paciente,
+  type PacienteInput,
+  type Periodo,
+  type Sexo,
+} from "@/types";
 import type { PacienteRepository } from "./paciente.repository";
 
 /**
@@ -13,6 +20,7 @@ interface PatientApi {
   name?: string | null;
   email?: string | null;
   period?: string | null;
+  sex?: string | null;
   birthDate?: string | null;
   phone?: string | null;
   cpf?: string | null;
@@ -38,12 +46,18 @@ function toPeriodo(period: string | null | undefined): Periodo | null {
   return normalized === "matutino" || normalized === "noturno" ? normalized : null;
 }
 
+function toSexo(sex: string | null | undefined): Sexo | null {
+  const normalized = sex?.toLowerCase();
+  return normalized === "masculino" || normalized === "feminino" ? normalized : null;
+}
+
 function toDomain(p: PatientApi): Paciente {
   return {
     id: p.id,
     nome: p.name ?? null,
     email: p.email ?? null,
     periodo: toPeriodo(p.period),
+    sexo: toSexo(p.sex),
     dataNascimento: p.birthDate ? String(p.birthDate).slice(0, 10) : null,
     telefone: toLocalPhone(p.phone),
     cpf: digits(p.cpf),
@@ -58,6 +72,7 @@ function toApi(input: PacienteInput) {
     name: input.nome,
     email: input.email,
     period: PERIODO_API[input.periodo],
+    sex: SEXO_API[input.sexo],
     birthDate: input.dataNascimento,
     phone: input.telefone,
     cpf: input.cpf,

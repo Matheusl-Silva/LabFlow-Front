@@ -11,13 +11,20 @@ export type ExamData = Record<string, ExamValue>;
 
 /**
  * GET /exam/patient/:id — a API faz um `select` enxuto e devolve
- * `{id, date, preceptor: {name}, examTemplate: {name}}`. Não vem `examTemplateId`.
+ * `{id, date, createdAt, preceptor: {name}, examTemplate: {name}}`. Não vem
+ * `examTemplateId`.
  */
 export interface ExamListItem {
   id: number;
   date: string;
   templateName: string | null;
   preceptorName: string | null;
+  /**
+   * Timestamp de criação do registro. Não é exibido: serve só para desempatar a
+   * ordenação, já que `date` é reduzida ao dia e vários exames do mesmo paciente
+   * caem na mesma data.
+   */
+  createdAt: string | null;
 }
 
 /**
@@ -36,6 +43,22 @@ export interface ExamDetail {
   date: string;
   data: ExamData;
   schema: ExamTemplateSchema;
+  /**
+   * Observação IMPRESSA deste resultado (amostra hemolisada, jejum irregular).
+   * É do exame lançado, ao contrário de `material`/`method`.
+   */
+  observation: string | null;
+  /**
+   * Observação NÃO impressa: recado interno do laboratório. Aparece na tela do
+   * exame, nunca no laudo — nem no layout de impressão, nem no de tela.
+   */
+  internalObservation: string | null;
+  /**
+   * Vêm embutidos do modelo (`examTemplate.material` / `.method`), como o
+   * `schema` — o laudo os imprime sem precisar de um GET /template/:id extra.
+   */
+  material: string | null;
+  method: string | null;
   examTemplateId: number | null;
   patientId: number | null;
   preceptorId: number | null;
@@ -52,6 +75,10 @@ export interface ExamInput {
   data: ExamData;
   preceptorId: number;
   responsibleId: number;
+  /** Texto livre que SAI no laudo; `null` quando em branco. */
+  observation?: string | null;
+  /** Texto livre que NÃO sai no laudo; `null` quando em branco. */
+  internalObservation?: string | null;
 }
 
 /**
@@ -64,4 +91,6 @@ export interface ExamUpdateInput {
   data: ExamData;
   preceptorId: number;
   responsibleId: number;
+  observation?: string | null;
+  internalObservation?: string | null;
 }

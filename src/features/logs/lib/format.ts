@@ -1,15 +1,17 @@
-import type { AuditAction, AuditEntity } from "@/types";
+import type { AuditAction, AuditEntity, AuditLog } from "@/types";
 
 /**
  * "Movimentou" (entrada/saída de estoque) é separado de "Editou" de propósito:
  * quem lê o histórico precisa distinguir a operação do dia a dia de uma
- * alteração no cadastro do item.
+ * alteração no cadastro do item. "Gerou laudo" segue a mesma lógica: não muda
+ * nada no exame, mas é o momento em que o resultado sai do sistema.
  */
 export const ACTION_LABEL: Record<AuditAction, string> = {
   CREATE: "Criou",
   UPDATE: "Editou",
   DELETE: "Excluiu",
   ADJUST: "Movimentou",
+  PRINT: "Gerou laudo",
 };
 
 export const ACTION_BADGE: Record<AuditAction, string> = {
@@ -17,6 +19,7 @@ export const ACTION_BADGE: Record<AuditAction, string> = {
   UPDATE: "bg-amber-100 text-amber-800",
   DELETE: "bg-red-100 text-red-800",
   ADJUST: "bg-sky-100 text-sky-800",
+  PRINT: "bg-violet-100 text-violet-800",
 };
 
 export const ENTITY_LABEL: Record<AuditEntity, string> = {
@@ -27,6 +30,20 @@ export const ENTITY_LABEL: Record<AuditEntity, string> = {
   stock_item: "Item de estoque",
   user: "Usuário",
 };
+
+/**
+ * Como o registro alterado aparece na tela: o nome resolvido pela API ("Maria
+ * Silva") em vez do id, que não diz nada a quem lê o histórico. O tipo entra
+ * junto porque nomes se repetem entre entidades — "Item de estoque: Álcool 70%"
+ * é diferente de um paciente homônimo.
+ *
+ * Sem nome (registro apagado de vez, ou log antigo), cai no par tipo + id, que
+ * mantém o evento rastreável.
+ */
+export function entityLabel(log: AuditLog): string {
+  const tipo = ENTITY_LABEL[log.entity] ?? log.entity;
+  return log.entityName ? `${tipo}: ${log.entityName}` : `${tipo} #${log.entityId}`;
+}
 
 /**
  * Rótulos em português dos campos do sistema (nomes de coluna em inglês → PT).
@@ -40,8 +57,12 @@ export const FIELD_LABEL: Record<string, string> = {
   // Modelo de exame
   schema: "Campos",
   active: "Ativo",
+  material: "Material",
+  method: "Método",
   // Exame
   data: "Resultado",
+  observation: "Observação do laudo",
+  internalObservation: "Observação interna",
   examTemplateId: "Modelo de exame",
   patientId: "Paciente",
   preceptorId: "Preceptor",
@@ -50,6 +71,7 @@ export const FIELD_LABEL: Record<string, string> = {
   email: "E-mail",
   phone: "Telefone",
   period: "Período",
+  sex: "Sexo",
   medication: "Medicação",
   pathology: "Patologia",
   birthDate: "Data de nascimento",

@@ -1,5 +1,5 @@
 import { formatDate } from "@/lib/format";
-import { nomePaciente, type Paciente } from "@/types";
+import { labelSexo, nomePaciente, type Paciente } from "@/types";
 
 interface LaudoLayoutProps {
   title: string;
@@ -8,6 +8,9 @@ interface LaudoLayoutProps {
   paciente: Paciente;
   responsavelNome?: string | null;
   preceptorNome?: string | null;
+  /** Vêm do modelo do exame. Nulos, a linha some do cabeçalho. */
+  material?: string | null;
+  method?: string | null;
   variant?: "screen" | "print";
   children: React.ReactNode;
 }
@@ -24,6 +27,8 @@ export function LaudoLayout({
   paciente,
   responsavelNome,
   preceptorNome,
+  material,
+  method,
   variant = "screen",
   children,
 }: LaudoLayoutProps) {
@@ -59,8 +64,13 @@ export function LaudoLayout({
         <dl className="mt-4 grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
           <LaudoInfo label="Paciente" value={`${nomePaciente(paciente)} (#${paciente.id})`} />
           <LaudoInfo label="Nascimento" value={formatDate(paciente.dataNascimento)} />
+          <LaudoInfo label="Sexo" value={labelSexo(paciente.sexo)} />
           <LaudoInfo label="Responsável" value={responsavelNome ?? "—"} />
           <LaudoInfo label="Preceptor" value={preceptorNome ?? "—"} />
+          {/* Modelos antigos não têm material/método: em vez de imprimir "—",
+              a linha some — o laudo não deve afirmar o que não sabe. */}
+          {material && <LaudoInfo label="Material" value={material} />}
+          {method && <LaudoInfo label="Método" value={method} />}
         </dl>
       </header>
 

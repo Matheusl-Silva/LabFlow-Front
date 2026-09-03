@@ -14,6 +14,12 @@ export const endpoints = {
   usuarios: {
     base: "/user",
     byId: (id: number | string) => `/user/${id}`,
+    /**
+     * Quem pode ser preceptor/responsável de exame: administradores ativos.
+     * Aberto a qualquer autenticado (o operador que lança o exame precisa da
+     * lista), e devolve só `{id, name}`.
+     */
+    examStaff: "/user/exam-staff",
   },
   pacientes: {
     base: "/patient",
@@ -32,6 +38,11 @@ export const endpoints = {
     base: "/exam",
     byId: (id: number | string) => `/exam/${id}`,
     byPatient: (patientId: number | string) => `/exam/patient/${patientId}`,
+    /**
+     * Registra no histórico que o laudo foi emitido. Não devolve arquivo: o
+     * laudo é montado no navegador, e a API só grava quem imprimiu e quando.
+     */
+    report: (id: number | string) => `/exam/${id}/report`,
   },
   anamnese: {
     base: "/anamnesis",

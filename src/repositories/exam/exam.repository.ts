@@ -12,4 +12,9 @@ export interface ExamRepository {
   create(input: ExamInput): Promise<{ id: number }>;
   update(id: number | string, input: ExamUpdateInput): Promise<void>;
   delete(id: number | string): Promise<void>;
+  /**
+   * Registra a emissão do laudo no histórico de auditoria. Não gera arquivo —
+   * a impressão é do navegador; isto só deixa o rastro de quem emitiu.
+   */
+  registerReport(id: number | string): Promise<void>;
 }

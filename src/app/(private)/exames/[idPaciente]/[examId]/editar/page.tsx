@@ -13,7 +13,7 @@ import { FormField } from "@/components/forms/FormField";
 import { LoadingState } from "@/components/feedback/LoadingState";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { usePacienteQuery } from "@/hooks/usePacientes";
-import { useUsuariosQuery } from "@/hooks/useUsuarios";
+import { useEquipeExameQuery } from "@/hooks/useUsuarios";
 import { useExamQuery, useExamsByPatientQuery, useUpdateExam } from "@/hooks/useExam";
 import { isApiError } from "@/lib/http/errors";
 import { routes } from "@/constants/routes";
@@ -32,6 +32,8 @@ interface DynamicExamValues {
   responsibleId: string;
   preceptorId: string;
   data: Record<string, string>;
+  observation: string;
+  internalObservation: string;
 }
 
 /**
@@ -68,7 +70,9 @@ export default function EditarExameDinamicoPage() {
 
   const { data: paciente, isLoading: loadingPac, isError: pacError } =
     usePacienteQuery(idPaciente);
-  const { data: usuarios = [], isLoading: loadingUsuarios } = useUsuariosQuery();
+  // Só administradores ativos podem assinar o exame como preceptor ou
+  // responsável — a API já devolve a lista filtrada.
+  const { data: usuarios = [], isLoading: loadingUsuarios } = useEquipeExameQuery();
   const { data: exam, isLoading: loadingExam, isError: examError } =
     useExamQuery(examId);
   // O nome do template não vem em GET /exam/:id; a listagem do paciente (em cache
@@ -141,6 +145,9 @@ export default function EditarExameDinamicoPage() {
               responsibleId: Number(values.responsibleId),
               preceptorId: Number(values.preceptorId),
               data,
+              // `null` em vez de "" — o laudo omite a seção quando não há texto.
+              observation: values.observation?.trim() || null,
+              internalObservation: values.internalObservation?.trim() || null,
             },
           });
           toast.success(`Exame #${exam.id} atualizado com sucesso.`);
@@ -180,10 +187,21 @@ function DynamicExamEditForm({
       data: Object.fromEntries(
         Object.keys(exam.schema).map((key) => [key, toInputValue(exam.data?.[key])]),
       ),
+      observation: exam.observation ?? "",
+      internalObservation: exam.internalObservation ?? "",
     },
   });
 
   const campos = Object.entries(exam.schema);
+
+  // Exames antigos podem apontar para quem hoje não é mais elegível (nunca foi
+  // admin, perdeu o papel ou teve a conta desativada). O <select> não tem a
+  // opção, então o campo abre vazio: avisamos por que, em vez de deixar
+  // parecer que o exame nunca teve responsável.
+  const elegiveis = new Set(usuarios.map((u) => u.id));
+  const foraDaLista = (id: number | null) => id != null && !elegiveis.has(id);
+  const AVISO_FORA_DA_LISTA =
+    "Quem constava aqui não é mais elegível (só administradores ativos podem assinar). Escolha outro.";
 
   return (
     <div className="space-y-6">
@@ -226,6 +244,9 @@ function DynamicExamEditForm({
                   label="Responsável"
                   required
                   error={errors.responsibleId?.message}
+                  hint={
+                    foraDaLista(exam.responsibleId) ? AVISO_FORA_DA_LISTA : undefined
+                  }
                 >
                   <select
                     id="responsibleId"
@@ -248,6 +269,7 @@ function DynamicExamEditForm({
                   label="Preceptor"
                   required
                   error={errors.preceptorId?.message}
+                  hint={foraDaLista(exam.preceptorId) ? AVISO_FORA_DA_LISTA : undefined}
                 >
                   <select
                     id="preceptorId"
@@ -265,6 +287,30 @@ function DynamicExamEditForm({
                   </select>
                 </FormField>
               </div>
+
+              {/* Material e método vêm do MODELO (são fixos por tipo de exame),
+                  então aparecem aqui só para conferência — editá-los é no
+                  cadastro do modelo, não a cada lançamento. */}
+              {(exam.material || exam.method) && (
+                <dl className="grid gap-x-6 gap-y-2 rounded-lg bg-slate-50 px-4 py-3 text-sm sm:grid-cols-2">
+                  {exam.material && (
+                    <div>
+                      <dt className="text-xs uppercase tracking-wide text-slate-500">
+                        Material
+                      </dt>
+                      <dd className="font-medium text-slate-800">{exam.material}</dd>
+                    </div>
+                  )}
+                  {exam.method && (
+                    <div>
+                      <dt className="text-xs uppercase tracking-wide text-slate-500">
+                        Método
+                      </dt>
+                      <dd className="font-medium text-slate-800">{exam.method}</dd>
+                    </div>
+                  )}
+                </dl>
+              )}
             </section>
 
             <section className="space-y-3">
@@ -294,6 +340,45 @@ function DynamicExamEditForm({
                   ))}
                 </div>
               )}
+            </section>
+
+            <section className="space-y-3">
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+                Observações
+              </h3>
+              {/* Particularidades DESTE resultado (amostra hemolisada, jejum
+                  irregular). Material e método não entram aqui: são do modelo. */}
+              <FormField
+                id="observation"
+                label="Observação do laudo (impressa)"
+                hint="Opcional. Sai no laudo entregue ao paciente. Em branco, o laudo não exibe a seção."
+              >
+                <textarea
+                  id="observation"
+                  rows={3}
+                  maxLength={1000}
+                  placeholder="Ex.: amostra levemente hemolisada."
+                  className="w-full resize-y rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+                  {...register("observation", { maxLength: 1000 })}
+                />
+              </FormField>
+
+              {/* Recado interno do laboratório. Fica no sistema e nunca é
+                  renderizado no laudo — nem na tela, nem na impressão. */}
+              <FormField
+                id="internalObservation"
+                label="Observação interna (não impressa)"
+                hint="Opcional. Visível apenas no sistema — nunca sai no laudo."
+              >
+                <textarea
+                  id="internalObservation"
+                  rows={3}
+                  maxLength={1000}
+                  placeholder="Ex.: repetir a dosagem na próxima coleta."
+                  className="w-full resize-y rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+                  {...register("internalObservation", { maxLength: 1000 })}
+                />
+              </FormField>
             </section>
 
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">

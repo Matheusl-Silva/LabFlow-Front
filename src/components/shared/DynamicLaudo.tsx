@@ -58,6 +58,8 @@ export function DynamicLaudo({
       paciente={paciente}
       responsavelNome={responsavelNome ?? exam.responsibleName}
       preceptorNome={preceptorNome ?? exam.preceptorName}
+      material={exam.material}
+      method={exam.method}
       variant={variant}
     >
       <LaudoSecao title="Resultados" variant={variant}>
@@ -90,6 +92,31 @@ export function DynamicLaudo({
           </table>
         )}
       </LaudoSecao>
+
+      {/* Só existe quando o operador escreveu algo: seção vazia num laudo é
+          ruído, e pior, sugere que faltou preencher. */}
+      {exam.observation?.trim() && (
+        <LaudoSecao title="Observação" variant={variant}>
+          <p className="whitespace-pre-line text-sm text-slate-700">
+            {exam.observation.trim()}
+          </p>
+        </LaudoSecao>
+      )}
+
+      {/* A observação interna NÃO é parte do laudo: é recado do laboratório
+          sobre este exame. Some no `variant="print"` por garantia — o laudo
+          impresso é outro componente (LaudoImpressao), que nem lê este campo,
+          mas um dia alguém pode imprimir por aqui e o texto não pode vazar. */}
+      {variant === "screen" && exam.internalObservation?.trim() && (
+        <LaudoSecao title="Observação interna" variant={variant}>
+          <p className="mb-2 text-xs text-amber-700">
+            Uso interno — não sai no laudo entregue ao paciente.
+          </p>
+          <p className="whitespace-pre-line text-sm text-slate-700">
+            {exam.internalObservation.trim()}
+          </p>
+        </LaudoSecao>
+      )}
     </LaudoLayout>
   );
 }

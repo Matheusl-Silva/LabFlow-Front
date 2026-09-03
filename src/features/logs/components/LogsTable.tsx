@@ -54,7 +54,20 @@ export function LogsTable({
     {
       key: "entity",
       header: "Registro",
-      cell: (l) => `${ENTITY_LABEL[l.entity]} #${l.entityId}`,
+      // Nome em destaque, tipo e id abaixo: quem lê o histórico reconhece
+      // "Maria Silva", não "Paciente #42" — mas o id continua à vista porque é
+      // por ele que se filtra e se casa o evento com o registro no banco.
+      cell: (l) => (
+        <div className="flex flex-col">
+          <span className="text-slate-900">
+            {l.entityName ?? `${ENTITY_LABEL[l.entity]} #${l.entityId}`}
+          </span>
+          <span className="text-xs text-slate-500">
+            {ENTITY_LABEL[l.entity]}
+            {l.entityName ? ` #${l.entityId}` : ""}
+          </span>
+        </div>
+      ),
     },
     {
       key: "acoes",

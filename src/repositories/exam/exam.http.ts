@@ -14,6 +14,7 @@ import type { ExamRepository } from "./exam.repository";
 interface ExamListApi {
   id: number;
   date: string;
+  createdAt?: string | null;
   preceptor?: { name?: string } | null;
   examTemplate?: { name?: string } | null;
 }
@@ -27,13 +28,19 @@ interface ExamDetailApi {
   id: number;
   date: string;
   data?: ExamData | null;
+  observation?: string | null;
+  internalObservation?: string | null;
   examTemplateId?: number;
   patientId?: number;
   preceptorId?: number;
   responsibleId?: number;
   preceptor?: { name?: string } | null;
   responsible?: { name?: string } | null;
-  examTemplate?: { schema?: ExamTemplateSchema | null } | null;
+  examTemplate?: {
+    schema?: ExamTemplateSchema | null;
+    material?: string | null;
+    method?: string | null;
+  } | null;
 }
 
 const toIsoDay = (value: string) =>
@@ -45,6 +52,9 @@ function toListItem(api: ExamListApi): ExamListItem {
     date: toIsoDay(api.date),
     templateName: api.examTemplate?.name ?? null,
     preceptorName: api.preceptor?.name ?? null,
+    // Ao contrário de `date`, NÃO é truncada: a hora é justamente o que
+    // desempata dois exames do mesmo dia.
+    createdAt: api.createdAt ?? null,
   };
 }
 
@@ -54,6 +64,10 @@ function toDetail(api: ExamDetailApi): ExamDetail {
     date: toIsoDay(api.date),
     data: api.data ?? {},
     schema: api.examTemplate?.schema ?? {},
+    observation: api.observation ?? null,
+    internalObservation: api.internalObservation ?? null,
+    material: api.examTemplate?.material ?? null,
+    method: api.examTemplate?.method ?? null,
     examTemplateId: api.examTemplateId ?? null,
     patientId: api.patientId ?? null,
     preceptorId: api.preceptorId ?? null,
@@ -92,5 +106,9 @@ export const httpExamRepository: ExamRepository = {
 
   async delete(id) {
     await httpClient.delete(endpoints.exam.byId(id));
+  },
+
+  async registerReport(id) {
+    await httpClient.post(endpoints.exam.report(id));
   },
 };

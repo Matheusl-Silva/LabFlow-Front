@@ -44,4 +44,46 @@
   .min-h-screen {
     min-height: 0 !important;
   }
+
+  /* As faixas azuis do laudo sao `border`, que o navegador sempre imprime.
+     Isto garante o resto (a logo, a cor do titulo do exame) mesmo quando o
+     usuario nao marca "Graficos de plano de fundo" no dialogo de impressao. */
+  .laudo-print,
+  .laudo-print * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* --- Pe do laudo -----------------------------------------------------
+     O pe (ressalva academica + rodape institucional) tem de ficar na BASE de
+     todas as paginas, e nao logo depois do conteudo -- um exame curto deixava
+     esse bloco no meio da folha. Sao duas pecas que trabalham juntas:
+
+     1. `.laudo-rodape-fixo` e `position: fixed`. Em midia paginada esse e o
+        UNICO mecanismo que ancora o bloco na base de cada pagina impressa.
+        Um <tfoot> sozinho nao resolve: ele repete a cada quebra, mas assenta
+        logo apos o conteudo, entao numa tabela curta para no meio da folha.
+     2. `.laudo-rodape-espaco` mora no <tfoot> do corpo do laudo. Um
+        table-footer-group se repete no fim de cada pagina, entao ele reserva
+        a faixa de altura onde o bloco fixo sera pintado -- sem isso o texto
+        do laudo correria por baixo dele.
+
+     As alturas precisam andar juntas: se o bloco fixo crescer, aumente o
+     espaco na mesma medida. A variante `-curto` vale quando nao ha rodape
+     cadastrado e o pe carrega so a ressalva, que e sempre impressa. */
+  .laudo-rodape-fixo {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #fff;
+  }
+
+  .laudo-rodape-espaco {
+    height: 26mm;
+  }
+
+  .laudo-rodape-espaco-curto {
+    height: 14mm;
+  }
 }

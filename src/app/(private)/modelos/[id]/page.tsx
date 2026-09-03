@@ -10,7 +10,10 @@ import { Button } from "@/components/ui/button";
 import { LoadingState } from "@/components/feedback/LoadingState";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { ConfirmDialog } from "@/components/modals/ConfirmDialog";
-import { ModeloForm } from "@/features/modelos/components/ModeloForm";
+import {
+  ModeloForm,
+  type ModeloFormValues,
+} from "@/features/modelos/components/ModeloForm";
 import { schemaEquals } from "@/features/modelos/lib/schema";
 import {
   useCreateExamTemplateVersion,
@@ -21,7 +24,7 @@ import {
 } from "@/hooks/useExamTemplates";
 import { isApiError } from "@/lib/http/errors";
 import { routes } from "@/constants/routes";
-import { schemaToDraft, type ExamTemplate, type ExamTemplateSchema } from "@/types";
+import { schemaToDraft, type ExamTemplate } from "@/types";
 
 export default function ModeloDetalhePage() {
   const params = useParams<{ id: string }>();
@@ -72,13 +75,19 @@ function ModeloDetalhe({ modelo }: { modelo: ExamTemplate }) {
    *
    *   campos mudaram → POST /template/update/:id  (versão nova; leva o nome
    *                    novo junto quando também mudou, evitando um PUT extra)
-   *   só o nome mudou → PUT /template/:id          (mesmo id, mesma versão)
+   *   só metadados   → PUT /template/:id          (mesmo id, mesma versão)
+   *
+   * Material e método são metadados: mudá-los não invalida laudo nenhum, então
+   * não justificam uma versão nova — mas viajam junto quando ela acontece, para
+   * a nova versão não nascer com os valores antigos.
    */
-  async function salvar({ name, schema }: { name: string; schema: ExamTemplateSchema }) {
+  async function salvar({ name, schema, material, method }: ModeloFormValues) {
     const nomeMudou = name !== modelo.name;
     const camposMudaram = !schemaEquals(schema, modelo.schema);
+    const metadadosMudaram =
+      material !== modelo.material || method !== modelo.method;
 
-    if (!nomeMudou && !camposMudaram) {
+    if (!nomeMudou && !camposMudaram && !metadadosMudaram) {
       toast.info("Nenhuma alteração para salvar.");
       return;
     }
@@ -87,7 +96,7 @@ function ModeloDetalhe({ modelo }: { modelo: ExamTemplate }) {
       if (camposMudaram) {
         // Uma chamada só: a nova versão já nasce com o nome novo (quando mudou).
         const nova = await versionMutation.mutateAsync(
-          nomeMudou ? { name, schema } : { schema },
+          nomeMudou ? { name, schema, material, method } : { schema, material, method },
         );
         toast.success("Modelo atualizado.");
         // O id mudou: `replace` para o "voltar" do navegador não cair no id morto.
@@ -95,8 +104,13 @@ function ModeloDetalhe({ modelo }: { modelo: ExamTemplate }) {
         return;
       }
 
-      // Só o nome mudou: metadados, mesma versão.
-      await updateMutation.mutateAsync({ id: modelo.id, input: { name } });
+      // Nome e/ou material/método: metadados, mesma versão. O `name` vai
+      // sempre (mesmo inalterado) porque a API o usa na checagem de duplicidade
+      // — omiti-lo a faria consultar por um nome indefinido.
+      await updateMutation.mutateAsync({
+        id: modelo.id,
+        input: { name, material, method },
+      });
       toast.success("Modelo atualizado.");
       router.push(routes.modelos);
     } catch (err) {
@@ -136,6 +150,8 @@ function ModeloDetalhe({ modelo }: { modelo: ExamTemplate }) {
         key={modelo.id}
         initialName={modelo.name}
         initialFields={schemaToDraft(modelo.schema)}
+        initialMaterial={modelo.material}
+        initialMethod={modelo.method}
         nomesEmUso={nomesEmUso}
         submitLabel="Salvar alterações"
         onCancel={() => router.push(routes.modelos)}

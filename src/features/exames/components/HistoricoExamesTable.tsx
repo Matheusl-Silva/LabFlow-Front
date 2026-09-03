@@ -8,6 +8,13 @@ import { formatDate } from "@/lib/format";
 import { routes } from "@/constants/routes";
 import type { ExamListItem } from "@/types";
 
+/** Data inválida ou ausente vale 0, para não contaminar a comparação com NaN. */
+function timestamp(value: string | null | undefined): number {
+  if (!value) return 0;
+  const ms = new Date(value).getTime();
+  return Number.isNaN(ms) ? 0 : ms;
+}
+
 interface HistoricoExamesTableProps {
   idPaciente: number | string;
   exames: ExamListItem[];
@@ -28,9 +35,19 @@ export function HistoricoExamesTable({
   canManage,
 }: HistoricoExamesTableProps) {
   // Mais recentes primeiro. Cópia para não mutar o array recebido por prop.
-  const examesOrdenados = [...exames].sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
-  );
+  // Como `date` chega truncada no dia, empates são comuns: aí desempatamos pelo
+  // `createdAt` (o lançado por último aparece primeiro) e, se nem isso vier,
+  // pelo `id`, que é sequencial. O back já devolve nessa mesma ordem — isto aqui
+  // é a garantia de que a tela não depende disso.
+  const examesOrdenados = [...exames].sort((a, b) => {
+    const porData = timestamp(b.date) - timestamp(a.date);
+    if (porData !== 0) return porData;
+
+    const porCriacao = timestamp(b.createdAt) - timestamp(a.createdAt);
+    if (porCriacao !== 0) return porCriacao;
+
+    return b.id - a.id;
+  });
 
   const columns: Column<ExamListItem>[] = [
     {

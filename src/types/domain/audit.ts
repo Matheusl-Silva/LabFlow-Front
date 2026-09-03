@@ -1,5 +1,9 @@
-/** `ADJUST` é a movimentação de estoque — separada do `UPDATE` (edição). */
-export type AuditAction = "CREATE" | "UPDATE" | "DELETE" | "ADJUST";
+/**
+ * `ADJUST` é a movimentação de estoque — separada do `UPDATE` (edição).
+ * `PRINT` é a emissão do laudo: não altera o exame, registra que o resultado
+ * saiu do sistema (e por quem).
+ */
+export type AuditAction = "CREATE" | "UPDATE" | "DELETE" | "ADJUST" | "PRINT";
 export type AuditEntity =
   | "exam"
   | "exam_template"
@@ -20,6 +24,12 @@ export interface AuditLog {
    * nem como exclusão lógica.
    */
   userName?: string | null;
+  /**
+   * Nome do registro alvo da ação, resolvido pela API ("Maria Silva",
+   * "Hemograma — Maria Silva"). Anulável: só fica nulo se o registro não
+   * existir mais nem como exclusão lógica — aí a tela cai no id.
+   */
+  entityName?: string | null;
   before: Record<string, unknown> | null;
   after: Record<string, unknown> | null;
   createdAt: string;

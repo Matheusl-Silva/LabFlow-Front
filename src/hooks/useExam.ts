@@ -65,6 +65,17 @@ export function useUpdateExam(patientId: number | string) {
   });
 }
 
+/**
+ * Registra no histórico que o laudo foi emitido. A impressão em si é do
+ * navegador — esta mutation só deixa o rastro na auditoria, e por isso NÃO
+ * bloqueia a impressão quando falha (ver a tela do laudo).
+ */
+export function useRegisterExamReport() {
+  return useMutation({
+    mutationFn: (id: number | string) => examService.registrarLaudo(id),
+  });
+}
+
 export function useDeleteExam(patientId: number | string) {
   const qc = useQueryClient();
   return useMutation({
