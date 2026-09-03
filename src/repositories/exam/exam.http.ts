@@ -14,6 +14,7 @@ import type { ExamRepository } from "./exam.repository";
 interface ExamListApi {
   id: number;
   date: string;
+  createdAt?: string | null;
   preceptor?: { name?: string } | null;
   examTemplate?: { name?: string } | null;
 }
@@ -51,6 +52,9 @@ function toListItem(api: ExamListApi): ExamListItem {
     date: toIsoDay(api.date),
     templateName: api.examTemplate?.name ?? null,
     preceptorName: api.preceptor?.name ?? null,
+    // Ao contrário de `date`, NÃO é truncada: a hora é justamente o que
+    // desempata dois exames do mesmo dia.
+    createdAt: api.createdAt ?? null,
   };
 }
 

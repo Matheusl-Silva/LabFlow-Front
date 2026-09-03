@@ -11,13 +11,20 @@ export type ExamData = Record<string, ExamValue>;
 
 /**
  * GET /exam/patient/:id — a API faz um `select` enxuto e devolve
- * `{id, date, preceptor: {name}, examTemplate: {name}}`. Não vem `examTemplateId`.
+ * `{id, date, createdAt, preceptor: {name}, examTemplate: {name}}`. Não vem
+ * `examTemplateId`.
  */
 export interface ExamListItem {
   id: number;
   date: string;
   templateName: string | null;
   preceptorName: string | null;
+  /**
+   * Timestamp de criação do registro. Não é exibido: serve só para desempatar a
+   * ordenação, já que `date` é reduzida ao dia e vários exames do mesmo paciente
+   * caem na mesma data.
+   */
+  createdAt: string | null;
 }
 
 /**
