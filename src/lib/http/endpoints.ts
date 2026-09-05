@@ -54,10 +54,17 @@ export const endpoints = {
     base: "/audit-log",
   },
   estoque: {
-    /** Itens do estoque. Leitura: qualquer usuário. Cadastro/edição: admin. */
+    /**
+     * Itens do estoque. TODAS as rotas do módulo exigem o papel `STOCK` — ler
+     * inclusive; o ADMIN passa, como em qualquer papel.
+     *
+     * Estes comentários diziam "leitura: qualquer usuário, cadastro/edição:
+     * admin", que era verdade no modelo binário admin/comum, antes dos papéis.
+     * O `StockController` tem `@Roles(Role.STOCK)` na classe e nenhum override.
+     */
     base: "/stock",
     byId: (id: number | string) => `/stock/${id}`,
-    /** Entrada/saída de quantidade (delta). Liberado ao usuário comum. */
+    /** Entrada/saída de quantidade (delta). Exige `STOCK`, como o resto do módulo. */
     quantidade: (id: number | string) => `/stock/${id}/quantity`,
   },
   settings: {
