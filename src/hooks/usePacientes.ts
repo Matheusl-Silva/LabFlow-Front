@@ -33,10 +33,21 @@ export function usePacienteQuery(
   });
 }
 
+/**
+ * `confirmarRetorno` é a segunda tentativa do cadastro: a primeira falha com
+ * `PacienteRetornandoError` quando existe um paciente excluído de mesmo CPF, e
+ * a tela repete a chamada depois que o usuário confirma o retorno.
+ */
 export function useCreatePaciente() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (input: PacienteInput) => pacienteService.criar(input),
+    mutationFn: ({
+      input,
+      confirmarRetorno,
+    }: {
+      input: PacienteInput;
+      confirmarRetorno?: boolean;
+    }) => pacienteService.criar(input, { confirmarRetorno }),
     onSuccess: () => qc.invalidateQueries({ queryKey: KEYS.list() }),
   });
 }
