@@ -101,7 +101,7 @@ export default function NovoPacientePage() {
 
       <PacienteRetornandoDialog
         paciente={retorno?.paciente ?? null}
-        loading={createMutation.isPending}
+        loading={createMutation.isLoading}
         onCancel={() => setRetorno(null)}
         onConfirm={() => {
           if (retorno) void cadastrar(retorno.dados, true);
