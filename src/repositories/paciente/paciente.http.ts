@@ -1,7 +1,9 @@
 import { httpClient } from "@/lib/http/client";
 import { endpoints } from "@/lib/http/endpoints";
+import { isApiError } from "@/lib/http/errors";
 import {
   PERIODO_API,
+  PacienteRetornandoError,
   SEXO_API,
   type Paciente,
   type PacienteInput,
@@ -83,6 +85,42 @@ function toApi(input: PacienteInput) {
   };
 }
 
+/** Payload do 409 `PATIENT_RETURNING` (ver PatientSwagger.createPatient). */
+interface PatientReturningApi {
+  code?: string;
+  message?: string;
+  patient?: {
+    id?: number;
+    name?: string | null;
+    deletedAt?: string | null;
+    examCount?: number | null;
+    anamnesisCount?: number | null;
+  } | null;
+}
+
+/**
+ * Reconhece o 409 de "paciente retornando" e o traduz para o erro de domínio.
+ * Qualquer outro erro (inclusive um 409 de CPF já em uso por paciente ATIVO,
+ * que não traz `code`) passa direto e continua sendo tratado como falha.
+ */
+function toPacienteRetornando(err: unknown): PacienteRetornandoError | null {
+  if (!isApiError(err) || err.status !== 409) return null;
+
+  const payload = err.data as PatientReturningApi | null | undefined;
+  if (payload?.code !== "PATIENT_RETURNING" || !payload.patient?.id) return null;
+
+  return new PacienteRetornandoError(
+    {
+      id: payload.patient.id,
+      nome: payload.patient.name ?? null,
+      excluidoEm: payload.patient.deletedAt ?? null,
+      exames: payload.patient.examCount ?? 0,
+      anamneses: payload.patient.anamnesisCount ?? 0,
+    },
+    payload.message ?? err.message,
+  );
+}
+
 export const httpPacienteRepository: PacienteRepository = {
   async listAll() {
     const { data } = await httpClient.get<PatientApi[]>(endpoints.pacientes.base);
@@ -94,12 +132,21 @@ export const httpPacienteRepository: PacienteRepository = {
     return toDomain(data);
   },
 
-  async create(input) {
-    const { data } = await httpClient.post<{ id: number }>(
-      endpoints.pacientes.base,
-      toApi(input),
-    );
-    return data.id;
+  async create(input, options) {
+    try {
+      const { data } = await httpClient.post<{ id: number }>(
+        endpoints.pacientes.base,
+        toApi(input),
+        // Só vai na URL quando o usuário já confirmou: sem o parâmetro, a API
+        // recusa a reativação e devolve o 409 tratado logo abaixo.
+        options?.confirmarRetorno ? { params: { confirmReturn: true } } : undefined,
+      );
+      return data.id;
+    } catch (err) {
+      const retornando = toPacienteRetornando(err);
+      if (retornando) throw retornando;
+      throw err;
+    }
   },
 
   async update(id, input) {

@@ -70,3 +70,34 @@ export function nomePaciente(p: Paciente): string {
 export function labelSexo(sexo: Sexo | null | undefined): string {
   return sexo ? SEXO_API[sexo] : "—";
 }
+
+/**
+ * Cadastro excluído que a API encontrou com o mesmo CPF do formulário. CPF é
+ * identidade nacional, então para a API é a mesma pessoa voltando: confirmar o
+ * retorno reativa ESTE registro (com o id e o histórico dele) em vez de criar
+ * um paciente novo.
+ */
+export interface PacienteRetornando {
+  id: number;
+  nome: string | null;
+  excluidoEm: string | null;
+  /** Exames e anamneses que voltam vinculados ao paciente reativado. */
+  exames: number;
+  anamneses: number;
+}
+
+/**
+ * Erro de `pacienteRepository.create` quando existe um cadastro excluído com o
+ * mesmo CPF. Não é falha: é a API pedindo a confirmação do usuário antes de
+ * reativar. Quem trata deve mostrar a confirmação e repetir a criação com
+ * `confirmarRetorno`.
+ */
+export class PacienteRetornandoError extends Error {
+  readonly paciente: PacienteRetornando;
+
+  constructor(paciente: PacienteRetornando, message: string) {
+    super(message);
+    this.name = "PacienteRetornandoError";
+    this.paciente = paciente;
+  }
+}
